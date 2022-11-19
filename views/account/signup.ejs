@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/account.css">
+  <link rel="stylesheet" href="/css/master.css">
+
+  <title>Sign up</title>
+</head>
+<body>
+
+  <div class="row mt-5 text-white">
+    <div class="bg-primary mx-auto rounded shadow py-3" style="width:20%">
+      <h2 class="text-center">Sign Up</h2>
+      <h5>Username:</h5>
+      <input id="username" type="text" name="Username" value="">
+      <p id="error1" class="error"></p>
+      <h5>Password:</h5>
+      <input id="password" type="password" name="Password" value="">
+      <p id="error2" class="error"></p>
+      <h5>Retype Password:</h5>
+      <input id="repassword" type="password" name="RePassword" value="">
+      <p id="error3" class="error"></p>
+      <h5>Email:</h5>
+      <input id="email" type="text" name="Email" value="">
+      <p id="error4" class="error"></p>
+      <h5>Starting Balance:</h5>
+      <input id="startingBal" type="text" name="Balance" value="">
+      <p id="error5" class="error"></p>
+      <a href="/account/login" class="text-white">Already got an account?</a>
+      <button type="button" name="submit" class="mt-2 btn btn-light" onclick="submit()">Submit</button>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="/account.js"></script>
+</body>
