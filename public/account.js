@@ -26,8 +26,6 @@ function CheckInfo() {
   if (!username || !password || !repassword || !email || !startingBal) {
     alert('One or more entries are empty');
     return false;
-  } else if (false) {
-    //check username availability
   } else if (password != repassword) {
     document.getElementById('error3').textContent = "Passwords don't match";
     return false;

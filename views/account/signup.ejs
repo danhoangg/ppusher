@@ -11,23 +11,26 @@
   <div class="row mt-5 text-white">
     <div class="bg-primary mx-auto rounded shadow py-3" style="width:20%">
       <h2 class="text-center">Sign Up</h2>
-      <h5>Username:</h5>
-      <input id="username" type="text" name="Username" value="">
-      <p id="error1" class="error"></p>
-      <h5>Password:</h5>
-      <input id="password" type="password" name="Password" value="">
-      <p id="error2" class="error"></p>
-      <h5>Retype Password:</h5>
-      <input id="repassword" type="password" name="RePassword" value="">
-      <p id="error3" class="error"></p>
-      <h5>Email:</h5>
-      <input id="email" type="text" name="Email" value="">
-      <p id="error4" class="error"></p>
-      <h5>Starting Balance:</h5>
-      <input id="startingBal" type="text" name="Balance" value="">
-      <p id="error5" class="error"></p>
-      <a href="/account/login" class="text-white">Already got an account?</a>
-      <button type="button" name="submit" class="mt-2 btn btn-light" onclick="submitSignup()">Submit</button>
+      <div class="px-3">
+        <h5>Username:</h5>
+        <input id="username" type="text" name="Username" value="">
+        <p id="error1" class="error"><%= locals.error %></p>
+        <h5>Password:</h5>
+        <input id="password" type="password" name="Password" value="">
+        <p id="error2" class="error"></p>
+        <h5>Retype Password:</h5>
+        <input id="repassword" type="password" name="RePassword" value="">
+        <p id="error3" class="error"></p>
+        <h5>Email:</h5>
+        <input id="email" type="text" name="Email" value="">
+        <p id="error4" class="error"></p>
+        <h5>Starting Balance:</h5>
+        <input id="startingBal" type="text" name="Balance" value="">
+        <p id="error5" class="error"></p>
+        <a href="/account/login" class="text-white">Already got an account?</a>
+        <br>
+        <button type="button" name="submit" class="mt-2 btn btn-light" onclick="submitSignup()">Submit</button>
+      </div>
     </div>
   </div>
 

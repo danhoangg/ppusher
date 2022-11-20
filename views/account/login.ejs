@@ -11,14 +11,16 @@
   <div class="row mt-5 text-white">
     <div class="bg-primary mx-auto rounded shadow py-3" style="width:20%">
       <h2 class="text-center">Login</h2>
-      <h5>Username:</h5>
-      <input id="username" type="text" name="Username" value="">
-      <p id="error1" class="error"></p>
-      <h5>Password:</h5>
-      <input id="password" type="password" name="Password" value="">
-      <p id="error2" class="error"></p>
-      Don't have one? <a href="/account/signup" class="text-white">Sign up</a>
-      <button type="button" name="submit" class="mt-2 btn btn-light" onclick="submitLogin()">Submit</button>
+      <div class="px-3">
+        <h5>Username:</h5>
+        <input id="username" type="text" name="Username" value="">
+        <h5>Password:</h5>
+        <input id="password" type="password" name="Password" value="">
+        <p id="error2" class="error"><%= locals.error %></p>
+        Don't have one? <a href="/account/signup" class="text-white">Sign up</a>
+        <br>
+        <button type="button" name="submit" class="mt-2 btn btn-light" onclick="submitLogin()">Submit</button>
+      </div>
     </div>
   </div>
 
