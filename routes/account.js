@@ -4,11 +4,38 @@ const bodyParser = require('body-parser')
 var mysql = require('mysql');
 
 var con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "password",
-  database: "sys"
+  host: "sql7.freemysqlhosting.net",
+  port: "3306",
+  user: "sql7579297",
+  password: "",
+  database: "sql7579297"
 });
+
+con.connect(function(err) {});
+
+function checkIfUserExists(username) {
+  con.query("SELECT * FROM UserTable WHERE username = ?", username, function (err, result, fields) {
+    if (err) throw err;
+    if (result.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+}
+
+function insertUserTable(username, password, email) {
+  var sql = "INSERT INTO UserTable (Username, Password, Email) VALUES ('" + username + "', '" + password + "', '" + email + "')"
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    console.log("record successfully inserted into UserTable");
+  });
+  sql = "SELECT UserID FROM UserTable WHERE username = '" + username + "'"
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    return result[0].UserID;
+  });
+}
 
 const router = express.Router()
 
@@ -26,15 +53,11 @@ router.get('/signup', (req, res) => {
 router.post('/signup', (req, res) => {
   body = req.body
 
-  sql = "SELECT EXISTS(SELECT * FROM UserTable WHERE ...)"
-  con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      console.log("sql successfully executed");
-    });
-  });
+  if (checkIfUserExists(body.username)) {
+    res.render('account/signup', {error: "Username already exists"})
+  } else {
+    var userid = insertUserTable(body.username, body.password, body.email)
+  }
 })
 
 router.get('/', (req, res) => {
