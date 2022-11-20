@@ -5,7 +5,12 @@ function setCookie(cname, cvalue, exdays) {
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
-function submit() {
+function submitSignup() {
+  if (!CheckInfo()) return;
+  alert('yo');
+}
+
+function submitLogin() {
   if (!CheckInfo()) return;
   alert('yo');
 }
