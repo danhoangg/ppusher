@@ -7,12 +7,19 @@ function setCookie(cname, cvalue, exdays) {
 
 function submitSignup() {
   if (!CheckInfo()) return;
-  alert('yo');
+
+  fetch('/account/signup', {
+    method: 'POST', 
+    body: JSON.stringify({ username: document.getElementById('username').value, password: document.getElementById('password').value, email: document.getElementById('email').value, startingBal: document.getElementById('startingBal').value }),
+    headers: {
+      'content-type': 'application/json'
+    }
+  }).then(response => response.json());
 }
 
 function submitLogin() {
   if (!CheckInfo()) return;
-  alert('yo');
+
 }
 
 function CheckInfo() {
@@ -36,6 +43,9 @@ function CheckInfo() {
     document.getElementById('error5').textContent = "Invalid value";
     return false;
   } else if (startingBal < 10000 || startingBal > 1000000) {
-    document.getElementById('error5').textContent = "Valid values range between 10k-1m";
+    document.getElementById('error5').textContent = "Valid values range between 10k and 1m";
+    return false;
+  } else {
+    return true;
   }
 }
