@@ -13,14 +13,10 @@ var con = mysql.createConnection({
 
 con.connect(function(err) {});
 
-function checkIfUserExists(username) {
-  con.query("SELECT * FROM UserTable WHERE username = ?", username, function (err, result, fields) {
-    if (err) throw err;
-    if (result.length > 0) {
-      return true;
-    } else {
-      return false;
-    }
+function checkIfUserExists(username, callback) {
+  con.query("SELECT COUNT(*) FROM UserTable WHERE username = ?", username, function (err, result, fields) {
+    if (err) throw callback(err);
+    callback(null, result)
   });
 }
 
@@ -52,12 +48,16 @@ router.get('/signup', (req, res) => {
 
 router.post('/signup', (req, res) => {
   body = req.body
-
+  /*
   if (checkIfUserExists(body.username)) {
     res.render('account/signup', {error: "Username already exists"})
   } else {
     var userid = insertUserTable(body.username, body.password, body.email)
   }
+  */
+  checkIfUserExists(body.username, function(err, result) {
+    console.log(result)
+  })
 })
 
 router.get('/', (req, res) => {
