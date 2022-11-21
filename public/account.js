@@ -9,7 +9,7 @@ function submitSignup() {
   if (!CheckInfo()) return;
 
   fetch('/account/signup', {
-    method: 'POST', 
+    method: 'POST',
     body: JSON.stringify({ username: document.getElementById('username').value, password: document.getElementById('password').value, email: document.getElementById('email').value, startingBal: document.getElementById('startingBal').value }),
     headers: {
       'content-type': 'application/json'
@@ -18,8 +18,7 @@ function submitSignup() {
 }
 
 function submitLogin() {
-  if (!CheckInfo()) return;
-
+  return null
 }
 
 function CheckInfo() {
