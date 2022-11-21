@@ -9,17 +9,38 @@ function submitSignup() {
   if (!CheckInfo()) return;
 
   fetch('/account/signup', {
-    method: 'POST', 
+    method: 'POST',
+    redirect: 'follow',
     body: JSON.stringify({ username: document.getElementById('username').value, password: document.getElementById('password').value, email: document.getElementById('email').value, startingBal: document.getElementById('startingBal').value }),
     headers: {
       'content-type': 'application/json'
     }
-  }).then(response => response.json());
+  }).then(response => {
+    if (response.redirected) {
+      window.location.href = response.url;
+    } else {
+      userError = document.getElementById('error1');
+      userError.textContent = "Username already exists";
+    }
+  });
 }
 
 function submitLogin() {
-  if (!CheckInfo()) return;
-
+  fetch('/account/login', {
+    method: 'POST',
+    redirect: 'follow',
+    body: JSON.stringify({ username: document.getElementById('username').value, password: document.getElementById('password').value }),
+    headers: {
+      'content-type': 'application/json'
+    }
+  }).then(response => {
+    if (response.redirected) {
+      window.location.href = response.url;
+    } else {
+      userError = document.getElementById('error1');
+      userError.textContent = "Incorrect username or password";
+    }
+  });
 }
 
 function CheckInfo() {
