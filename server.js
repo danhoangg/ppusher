@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
 app.get('/home', (req, res) => {
   let cookie = req.cookies.username
   if (cookie) {
-    res.render("home")
+    res.render("home", {username: cookie})
   } else {
     res.redirect('/account/login')
   }
