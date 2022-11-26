@@ -5,6 +5,7 @@ function setCookie(cname, cvalue, exdays) {
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
+//functions for sending post requests to the server to either login or signup
 function submitSignup() {
   if (!CheckInfo()) return;
 
@@ -43,6 +44,9 @@ function submitLogin() {
   });
 }
 
+//Checks whether the info submitted is valid to be signed up
+//checks if passwords match, if email is in correct format, if starting balance is valid number
+//Also checks if all the entries have been submitted
 function CheckInfo() {
   var username = document.getElementById('username').value;
   var password = document.getElementById('password').value;

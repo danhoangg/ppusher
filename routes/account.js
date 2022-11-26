@@ -9,12 +9,16 @@ var con = mysql.createConnection({
   host: "sql7.freemysqlhosting.net",
   port: "3306",
   user: "sql7579297",
-  password: "",
+  password: "NkWyBFmxXc",
   database: "sql7579297"
 });
 
+//Making a router for the account section to keep the main server.js look clean
+//Will also make a router for the home page sections
 con.connect(function(err) {});
 
+//Important, all functions involving mysql must use callback functions so bc of asynchronous programming
+//Checks if the user exists in the database
 function checkIfUserExists(username, callback) {
   con.query("SELECT COUNT(*) FROM UserTable WHERE username = ?", username, function (err, result, fields) {
     if (err) throw callback(err);
@@ -22,6 +26,7 @@ function checkIfUserExists(username, callback) {
   });
 }
 
+// Inserts the user into the sql database
 function insertUserTable(username, password, email, callback) {
   var sql = "INSERT INTO UserTable (Username, Password, Email) VALUES ('" + username + "', '" + password + "', '" + email + "')"
   con.query(sql, function (err, result) {
@@ -35,6 +40,7 @@ function insertUserTable(username, password, email, callback) {
   });
 }
 
+//Then inserts the users starting balance into the transaction table
 function insertTransactionTable(startingBal, userid) {
   var sql = "INSERT INTO TransactionTable (UserID, Transaction, Balance) VALUES ('" + userid + "', '" + startingBal + "', '" + startingBal + "')"
   con.query(sql, function (err, result) {
@@ -43,6 +49,7 @@ function insertTransactionTable(startingBal, userid) {
   });
 }
 
+//This then checks if the users password entered matches the users password in database
 function checkPassword(username, password, callback) {
   var sql = "SELECT Password FROM UserTable WHERE username = '" + username + "'"
   con.query(sql, function(err, result) {
@@ -53,6 +60,7 @@ function checkPassword(username, password, callback) {
 
 const router = express.Router()
 
+//in order to render responses
 router.use(bodyParser.urlencoded({ extended: true }))
 router.use(bodyParser.json())
 router.use(cookieParser())
@@ -65,10 +73,11 @@ router.get('/signup', (req, res) => {
   res.render('account/signup')
 })
 
+//signup post request to make account
 router.post('/signup', (req, res) => {
   body = req.body
   hashedPassword = crypto.createHash('md5').update(body.password).digest('hex')
-  
+
   checkIfUserExists(body.username, function(err, userExists) {
     if (userExists > 0) {
       res.sendStatus(400)
@@ -81,6 +90,7 @@ router.post('/signup', (req, res) => {
   })
 })
 
+//login post request to check if information matches database and if it does then create a cookie of the users username
 router.post('/login', (req, res) => {
   body = req.body
   hashedPassword = crypto.createHash('md5').update(body.password).digest('hex')
@@ -103,8 +113,10 @@ router.post('/login', (req, res) => {
   })
 })
 
+//redirect to useful page as this one doesn't lead anywhere
 router.get('/', (req, res) => {
   res.redirect('/account/login')
 })
 
+//export the router to use in server.js
 module.exports = router

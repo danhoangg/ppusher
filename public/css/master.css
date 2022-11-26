@@ -1,0 +1,12 @@
+.bg-grey {
+  background-color: #d9d9d9;
+}
+
+button {
+  background: transparent;
+  border: none !important;
+}
+
+.wraooer {
+  display: inline-block;
+}

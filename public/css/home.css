@@ -199,3 +199,22 @@ a {
         padding-left: calc(var(--nav-width) + 188px)
     }
 }
+
+.roundest-top {
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+}
+
+.roundest-bottom {
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+}
+
+.lateststock {
+  width: 30%;
+  cursor: pointer;
+}
+
+.lateststock:hover {
+  background-color: #b9b9b9;
+}

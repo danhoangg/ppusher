@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const express = require('express')
 const app = express()
 
+//using ejs to render pages to pass information to the page
 app.set('view engine', 'ejs')
 
 app.use(cookieParser())
@@ -15,6 +16,8 @@ app.get('/', (req, res) => {
   res.redirect('/home')
 })
 
+//checks if the user has a cookie of their username to check if they're logged inspect logged in
+//if not logged in the redirect to login
 app.get('/home', (req, res) => {
   let cookie = req.cookies.username
   if (cookie) {
@@ -39,12 +42,14 @@ app.get('/getcookie', (req, res) => {
 })
 */
 
+//importing the account router
 const accountRouter = require('./routes/account')
 app.use('/account', accountRouter)
 
+//if the user searchs something that doesn't exist on the site, send 404 status code
 app.get('/:err', (req, res) => {
   res.sendStatus(404)
 })
 
-
+//listening on port 3000
 app.listen(3000)
