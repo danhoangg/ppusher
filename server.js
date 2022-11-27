@@ -18,14 +18,6 @@ app.get('/', (req, res) => {
 
 //checks if the user has a cookie of their username to check if they're logged inspect logged in
 //if not logged in the redirect to login
-app.get('/home', (req, res) => {
-  let cookie = req.cookies.username
-  if (cookie) {
-    res.render("home", {username: cookie})
-  } else {
-    res.redirect('/account/login')
-  }
-})
 
 /*
 Just testing how to use cookies
@@ -42,9 +34,12 @@ app.get('/getcookie', (req, res) => {
 })
 */
 
-//importing the account router
+//importing the account and home router
+const homeRouter = require('./routes/home')
 const accountRouter = require('./routes/account')
+app.use('/home', homeRouter)
 app.use('/account', accountRouter)
+
 
 //if the user searchs something that doesn't exist on the site, send 404 status code
 app.get('/:err', (req, res) => {
