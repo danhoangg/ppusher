@@ -57,12 +57,14 @@ function getPrices(tickers, callback) {
         bidprices = []
         askprices = []
         regularchangepercents = []
+        regularMarketPrices = []
         data.forEach(element => {
             bidprices.push(element.bid)
             askprices.push(element.ask)
             regularchangepercents.push(element.regularMarketChangePercent)
+            regularMarketPrices.push(element.regularMarketPrice)
         })
-        callback(null, bidprices, askprices, regularchangepercents)
+        callback(null, bidprices, askprices, regularchangepercents, regularMarketPrices)
     });
 }
 
@@ -85,23 +87,20 @@ function getTotalValue(profitloss, callback) {
     var totalvalue = 0;
     var stocks = [];
     var counter = 0;
-    var currentprices = [];
     profitloss.forEach(element => {
         stocks.push(element.Ticker)
     })
-    getPrices(stocks, function (err, bidprices, askprices, regularchangepercents) {
+    getPrices(stocks, function (err, bidprices, askprices, regularchangepercents, regularMarketPrices) {
         profitloss.forEach(element => {
             totalinvested += element.Invested;
             if (element.Type == "buy") {
                 totalvalue += calcValue(element.Invested, bidprices[counter], element.AvgOpen, element.Leverage, element.Type)
-                currentprices.push(bidprices[counter])
             } else {
                 totalvalue += calcValue(element.Invested, askprices[counter], element.AvgOpen, element.Leverage, element.Type)
-                currentprices.push(askprices[counter])
             }
             counter++;
         })
-        callback(null, totalinvested, totalvalue, currentprices.slice(-3), regularchangepercents)
+        callback(null, totalinvested, totalvalue, regularMarketPrices, regularchangepercents)
     });
 }
 
@@ -138,14 +137,14 @@ function updateValues(cookie, callback) {
                     latestorders = []
                     counter = 0;
                     profitloss.slice(-3).forEach(element => {
-                        percentage = (regularchangepercents[counter] * 100).toFixed(2);
+                        percentage = (regularchangepercents[counter]).toFixed(2);
                         if (percentage >= 0) {
                             latestorders.push({ ticker: element.Ticker, type: element.Type, currentprice: currentprices[counter], percentage: percentage, percentagecolor: "text-success" })
                         } else {
                             latestorders.push({ ticker: element.Ticker, type: element.Type, currentprice: currentprices[counter], percentage: percentage, percentagecolor: "text-danger" })
                         }
+                        counter++;
                     })
-                    console.log(latestorders)
                     callback(null, balance, monthpl, monthcolor, cashavailable, totalinvested, totalpl, currentcolor, latestorders)
                 })
             });
