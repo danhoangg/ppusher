@@ -55,15 +55,15 @@
       <div class="d-flex justify-content-between">
         <div class="">
           <h5>Cash Available:</h5>
-          <h3>$47,034.83</h3>
+          <h3><%= locals.cashavailable || locals.balance %></h3>
         </div>
         <div class="">
           <h5>Total Invested:</h5>
-          <h3>$10,201.54</h3>
+          <h3><%= locals.totalinvested || '$0.00' %></h3>
         </div>
         <div class="">
           <h5>Profit/Loss:</h5>
-          <h3 class="text-danger">-$2,535.33</h3>
+          <h3 class=<%= locals.currentcolor || 'text-success' %> > <%= locals.totalpl || '$0.00' %></h3>
         </div>
       </div>
     </div>
@@ -72,38 +72,24 @@
   <br>
   <!-- Latest orders section -->
   <h5>Latest Orders:</h5>
-  <div class="d-flex justify-content-between">
-
-      <div class="d-flex flex-row bg-grey py-2 px-3 roundest-top roundest-bottom lateststock">
-        <div class="">
-          <img src="Resources/placeholder.png" alt="" class="rounded-circle" style="width: 50px; height: auto;">
+  <div class="row mx-5">
+    
+    <% if(locals.latestorders.length == 0){ %>
+      <h4>No current orders</h4>
+    <% } else { %>
+      <% for(var i=0; i <= locals.latestorders.length-1; i++){ %>
+        <div class="d-flex flex-row bg-grey py-2 px-3 roundest-top roundest-bottom col-md-3 mx-5">
+          <div class="">
+          </div>
+          <div class="px-3">
+            <h4> <%= locals.latestorders[i].ticker.toUpperCase() %> </h4>
+            <div class="d-flex">
+              <p><%= locals.latestorders[i].currentprice %> <small class="text-secondary"> USD &nbsp</small> </p> <p class=<%= locals.latestorders[i].percentagecolor %>> <%= locals.latestorders[i].percentage %>%</p>
+            </div>
+          </div>
         </div>
-        <div class="px-3">
-          <h4>S&P 500</h4>
-          4038.75 <small class="text-secondary">USD</small> <p class="d-inline text-danger">-0.01%</p>
-        </div>
-      </div>
-
-      <div class="d-flex flex-row bg-grey py-2 px-3 roundest-top roundest-bottom lateststock">
-        <div class="">
-          <img src="Resources/placeholder.png" alt="" class="rounded-circle" style="width: 50px; height: auto;">
-        </div>
-        <div class="px-3">
-          <h4>Nasdaq 100</h4>
-          11782.75 <small class="text-secondary">USD</small> <p class="d-inline text-danger">-0.67%</p>
-        </div>
-      </div>
-
-      <div class="d-flex flex-row bg-grey py-2 px-3 roundest-top roundest-bottom lateststock">
-        <div class="">
-          <img src="Resources/placeholder.png" alt="" class="rounded-circle" style="width: 50px; height: auto;">
-        </div>
-        <div class="px-3">
-          <h4>Bitcoin Index</h4>
-          16520.22 <small class="text-secondary">USD</small> <p class="d-inline text-danger">-0.45%</p>
-        </div>
-      </div>
-
+      <% } %>
+    <% } %>
     </div>
 
   </div>
