@@ -37,3 +37,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
      // Your code to run since DOM is loaded and ready
     });
+
+$(".lateststock").on('click', function(event){
+  $('.lateststock').removeClass('activestock');
+  $(this).addClass('activestock');
+});

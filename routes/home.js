@@ -9,7 +9,7 @@ var con = mysql.createConnection({
     host: "sql7.freemysqlhosting.net",
     port: "3306",
     user: "sql7579297",
-    password: "",
+    password: "NkWyBFmxXc",
     database: "sql7579297"
 });
 
@@ -22,7 +22,7 @@ router.use(bodyParser.json())
 router.use(cookieParser())
 
 //function gets all info to be rendered on the page
-function getAccountInfo(username, callback) { 
+function getAccountInfo(username, callback) {
     con.query("SELECT TransactionTable.Balance FROM UserTable JOIN TransactionTable ON UserTable.UserID = TransactionTable.UserID WHERE username = ?", username, function (err, result, fields) {
         if (err) throw callback(err);
         callback(null, result[0].Balance)
@@ -59,8 +59,14 @@ function getPrices(tickers, callback) {
         regularchangepercents = []
         regularMarketPrices = []
         data.forEach(element => {
-            bidprices.push(element.bid)
-            askprices.push(element.ask)
+            //When stocks are pre or post state, there are no bid and ask prices therefore must use regularmarketprice
+            if (element.bid == 0 || element.bid == 0) {
+              bidprices.push(element.regularMarketPrice)
+              askprices.push(element.regularMarketPrice)
+            } else {
+              bidprices.push(element.bid)
+              askprices.push(element.ask)
+            }
             regularchangepercents.push(element.regularMarketChangePercent)
             regularMarketPrices.push(element.regularMarketPrice)
         })
@@ -136,15 +142,27 @@ function updateValues(cookie, callback) {
                     totalpl = totalpl.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
                     latestorders = []
                     counter = 0;
-                    profitloss.slice(-3).forEach(element => {
+                    profitloss.forEach(element => {
                         percentage = (regularchangepercents[counter]).toFixed(2);
-                        if (percentage >= 0) {
-                            latestorders.push({ ticker: element.Ticker, type: element.Type, currentprice: currentprices[counter], percentage: percentage, percentagecolor: "text-success" })
-                        } else {
-                            latestorders.push({ ticker: element.Ticker, type: element.Type, currentprice: currentprices[counter], percentage: percentage, percentagecolor: "text-danger" })
+                        try {
+                          if (element.Ticker != profitloss[counter-1].Ticker) {
+                            if (percentage >= 0) {
+                                latestorders.push({ ticker: element.Ticker, type: element.Type, currentprice: currentprices[counter], percentage: percentage, percentagecolor: "text-success" })
+                            } else {
+                                latestorders.push({ ticker: element.Ticker, type: element.Type, currentprice: currentprices[counter], percentage: percentage, percentagecolor: "text-danger" })
+                            }
+                          }
+                        } catch (e) {
+                          if (percentage >= 0) {
+                              latestorders.push({ ticker: element.Ticker, type: element.Type, currentprice: currentprices[counter], percentage: percentage, percentagecolor: "text-success" })
+                          } else {
+                              latestorders.push({ ticker: element.Ticker, type: element.Type, currentprice: currentprices[counter], percentage: percentage, percentagecolor: "text-danger" })
+                          }
                         }
                         counter++;
                     })
+                    latestorders = latestorders.reverse()
+                    latestorders = latestorders.slice(0, 3)
                     callback(null, balance, monthpl, monthcolor, cashavailable, totalinvested, totalpl, currentcolor, latestorders)
                 })
             });
@@ -156,7 +174,7 @@ function updateValues(cookie, callback) {
 router.get('/', (req, res) => {
     let cookie = req.cookies.username
     if (cookie) {
-        
+
         updateValues(cookie, function (err, balance, monthpl, monthcolor, cashavailable, totalinvested, totalpl, currentcolor, latestorders) {
             if (err) throw err;
             res.render("home", {

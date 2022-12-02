@@ -217,3 +217,7 @@ a {
 .lateststock:hover {
   background-color: #b9b9b9;
 }
+
+.lateststock.activestock {
+  background-color: #b9b9b9;
+}

@@ -21,7 +21,7 @@
           <br>
           <h4> <%= locals.username %> </h4>
         </span> </a>
-      <div class="nav_list"> <a href="#" class="nav_link active"> <i class='bx bx-grid-alt nav_icon'></i> <span
+      <div class="nav_list"> <a href="/home" class="nav_link active"> <i class='bx bx-grid-alt nav_icon'></i> <span
             class="nav_name">Dashboard</span> </a> <a href="#" class="nav_link"> <i class='bx bx-candles nav_icon'></i>
           <span class="nav_name">Orders</span> </a> <a href="#" class="nav_link"> <i
             class='bx bx-history nav_icon'></i> <span class="nav_name">History</span> </a> <a href="#"
@@ -69,16 +69,15 @@
     </div>
   </div>
 
-  <br>
   <!-- Latest orders section -->
   <h5>Latest Orders:</h5>
   <div class="row mx-5">
-    
+
     <% if(locals.latestorders.length == 0){ %>
       <h4>No current orders</h4>
     <% } else { %>
       <% for(var i=0; i <= locals.latestorders.length-1; i++){ %>
-        <div class="d-flex flex-row bg-grey py-2 px-3 roundest-top roundest-bottom col-md-3 mx-5">
+        <div id=<%="lateststock" + i%> class="d-flex flex-row bg-grey py-2 px-3 roundest-top lateststock roundest-bottom col-md-3 mx-4">
           <div class="">
           </div>
           <div class="px-3">
@@ -89,6 +88,59 @@
           </div>
         </div>
       <% } %>
+
+      <!-- TradingView Widget BEGIN -->
+      <div class="tradingview-widget-container w-75 mx-auto my-5">
+        <div id="tradingview_0b0ba"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        <script type="text/javascript">
+          var currentticker;
+          var stocklength = '<%- locals.latestorders.length %>'
+          var lateststocks = '<%- locals.latestorders.map(order => order.ticker) %>'
+          lateststocks = lateststocks.split(',')
+
+          function createWidget(ticker) {
+            new TradingView.widget(
+              {
+                "height": "400",
+                "symbol": ticker,
+                "interval": "D",
+                "timezone": "Etc/UTC",
+                "theme": "light",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "hide_top_toolbar": true,
+                "allow_symbol_change": true,
+                "save_image": false,
+                "container_id": "tradingview_0b0ba"
+              }
+            );
+          }
+
+          $( "#lateststock0" ).click(function() {
+            if (currentticker != 0 && stocklength >= 1) {
+              createWidget(lateststocks[0])
+              currentticker = 0
+            }
+          });
+          $( "#lateststock1" ).click(function() {
+            if (currentticker != 1 && stocklength >= 2) {
+              createWidget(lateststocks[1])
+              currentticker = 1
+            }
+          });
+          $( "#lateststock2" ).click(function() {
+            if (currentticker != 2 && stocklength == 3) {
+              createWidget(lateststocks[2])
+              currentticker = 2
+            }
+          });
+
+        </script>
+      </div>
+      <!-- TradingView Widget END -->
     <% } %>
     </div>
 
@@ -97,10 +149,6 @@
   <!--Container Main end-->
 
   <script type='text/javascript' src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js'></script>
-
-  <script type='text/javascript' src='#'></script>
-  <script type='text/javascript' src='#'></script>
-  <script type='text/javascript' src='#'></script>
   <script src="/js/home.js"></script>
 
   <script type="text/javascript">

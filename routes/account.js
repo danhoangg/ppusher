@@ -9,7 +9,7 @@ var con = mysql.createConnection({
   host: "sql7.freemysqlhosting.net",
   port: "3306",
   user: "sql7579297",
-  password: "",
+  password: "NkWyBFmxXc",
   database: "sql7579297"
 });
 
