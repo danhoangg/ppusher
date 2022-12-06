@@ -9,7 +9,7 @@ var con = mysql.createConnection({
     host: "sql7.freemysqlhosting.net",
     port: "3306",
     user: "sql7579297",
-    password: "NkWyBFmxXc",
+    password: "",
     database: "sql7579297"
 });
 
@@ -195,7 +195,23 @@ router.get('/', (req, res) => {
     }
 });
 
+//GOT AN IDEA, SEND POST REQUEST TO SERVER FROM FRONTEND JAVASCRIPT TO UPDATE VALUES
+//then just setinterval on the frontend and replace values on the home page to keep up to date with markets
+router.post('/', (req, res) => {
+  let cookie = req.cookies.username
+  updateValues(cookie, function (err, balance, monthpl, monthcolor, cashavailable, totalinvested, totalpl, currentcolor, latestorders) {
+    if (err) throw err;
+    newValues = {
+      totalpl: totalpl,
+      currentcolor: currentcolor
+    }
+    res.send([newValues, latestorders])
+  })
+})
 
+router.get('/:err', (req, res) => {
+  res.redirect('/')
+})
 
 //export router to server.js
 module.exports = router

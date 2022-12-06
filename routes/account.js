@@ -9,7 +9,7 @@ var con = mysql.createConnection({
   host: "sql7.freemysqlhosting.net",
   port: "3306",
   user: "sql7579297",
-  password: "NkWyBFmxXc",
+  password: "",
   database: "sql7579297"
 });
 
@@ -100,7 +100,7 @@ router.post('/login', (req, res) => {
       checkPassword(body.username, hashedPassword, function(err, password) {
         if (password == hashedPassword) {
           res.cookie(`username`, body.username, {
-            maxAge: 60*60*24
+            maxAge: 86400000
           })
           res.redirect('/home')
         } else {

@@ -63,7 +63,7 @@
         </div>
         <div class="">
           <h5>Profit/Loss:</h5>
-          <h3 class=<%= locals.currentcolor || 'text-success' %> > <%= locals.totalpl || '$0.00' %></h3>
+          <h3 id="totalpl" class=<%= locals.currentcolor || 'text-success' %> > <%= locals.totalpl || '$0.00' %></h3>
         </div>
       </div>
     </div>
@@ -83,7 +83,7 @@
           <div class="px-3">
             <h4> <%= locals.latestorders[i].ticker.toUpperCase() %> </h4>
             <div class="d-flex">
-              <p><%= locals.latestorders[i].currentprice %> <small class="text-secondary"> USD &nbsp</small> </p> <p class=<%= locals.latestorders[i].percentagecolor %>> <%= locals.latestorders[i].percentage %>%</p>
+              <p id=<%="currentprice" + i%> ><%= locals.latestorders[i].currentprice %> <small class="text-secondary"> USD &nbsp</small> </p> <p class=<%= locals.latestorders[i].percentagecolor %> id=<%="percentchange" + i%> > <%= locals.latestorders[i].percentage %>%</p>
             </div>
           </div>
         </div>
@@ -111,7 +111,6 @@
                 "locale": "en",
                 "toolbar_bg": "#f1f3f6",
                 "enable_publishing": false,
-                "hide_top_toolbar": true,
                 "allow_symbol_change": true,
                 "save_image": false,
                 "container_id": "tradingview_0b0ba"
