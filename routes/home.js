@@ -125,6 +125,7 @@ function updateValues(cookie, callback) {
         if (err) throw err
         getTransactions(cookie, function (err, transactions) {
             if (err) throw err;
+            if (transactions.length === 0) {transactions = [{Balance: balance}]}
             monthpl = balance - transactions[0].Balance
             monthpl = monthpl.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
             if (monthpl => 0) { monthcolor = "text-success" } else { monthcolor = "text-danger" }
