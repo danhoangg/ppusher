@@ -9,7 +9,7 @@ var con = mysql.createConnection({
     host: "sql7.freemysqlhosting.net",
     port: "3306",
     user: "sql7579297",
-    password: "",
+    password: "NkWyBFmxXc",
     database: "sql7579297"
 });
 
@@ -120,7 +120,6 @@ function calcPercentage(value, invested) {
 //so many callbacks :o
 //this looks like hell but read the function names and it should make sense
 //all this is is getting the data from the database and stock market and then rendering it on the page
-//hence fat render in middle
 function updateValues(cookie, callback) {
     getAccountInfo(cookie, function (err, balance) {
         if (err) throw err
@@ -194,6 +193,12 @@ router.get('/', (req, res) => {
         res.redirect('/account/login')
     }
 });
+
+//TIME TO MAKE THE ORDERS PAGE AND ILL ROUTE IT TO /home/orders
+router.get('/orders', (req, res) => {
+    //wait up i gotta make static part of website first
+    res.render("home/orders")
+})
 
 //GOT AN IDEA, SEND POST REQUEST TO SERVER FROM FRONTEND JAVASCRIPT TO UPDATE VALUES
 //then just setinterval on the frontend and replace values on the home page to keep up to date with markets
