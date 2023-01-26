@@ -9,7 +9,7 @@ var con = mysql.createConnection({
     host: "sql7.freemysqlhosting.net",
     port: "3306",
     user: "sql7579297",
-    password: "NkWyBFmxXc",
+    password: "",
     database: "sql7579297"
 });
 
@@ -20,6 +20,9 @@ const router = express.Router()
 router.use(bodyParser.urlencoded({ extended: true }))
 router.use(bodyParser.json())
 router.use(cookieParser())
+
+const ordersRouter = require('./orders')
+router.use('/', ordersRouter)
 
 //function gets all info to be rendered on the page
 function getAccountInfo(username, callback) {
@@ -60,7 +63,7 @@ function getPrices(tickers, callback) {
         regularMarketPrices = []
         data.forEach(element => {
             //When stocks are pre or post state, there are no bid and ask prices therefore must use regularmarketprice
-            if (element.bid == 0 || element.bid == 0) {
+            if (element.bid == 0 || element.ask == 0) {
               bidprices.push(element.regularMarketPrice)
               askprices.push(element.regularMarketPrice)
             } else {
@@ -194,12 +197,6 @@ router.get('/', (req, res) => {
         res.redirect('/account/login')
     }
 });
-
-//TIME TO MAKE THE ORDERS PAGE AND ILL ROUTE IT TO /home/orders
-router.get('/orders', (req, res) => {
-    //wait up i gotta make static part of website first
-    res.render("home/orders")
-})
 
 //GOT AN IDEA, SEND POST REQUEST TO SERVER FROM FRONTEND JAVASCRIPT TO UPDATE VALUES
 //then just setinterval on the frontend and replace values on the home page to keep up to date with markets
