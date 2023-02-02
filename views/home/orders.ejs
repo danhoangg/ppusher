@@ -8,6 +8,7 @@
     <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
 
     <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/orders.css">
     <link rel="stylesheet" href="/css/master.css">
 </head>
 <body classname="snippet-body" id="body-pd">
@@ -20,7 +21,7 @@
         <div> <a href="#" class="nav_logo">  <span class="nav_logo-name">
               <h2>PPusher</h2>
               <br>
-              <h4> <%= locals.username %> </h4>
+              <h4> <%= locals.username || "username" %> </h4>
             </span> </a>
           <div class="nav_list"> <a href="/home" class="nav_link"> <i class='bx bx-grid-alt nav_icon'></i> <span
                 class="nav_name">Dashboard</span> </a> <a href="/home/orders" class="nav_link active"> <i class='bx bx-candles nav_icon'></i>
@@ -56,27 +57,94 @@
           <h5>$123,909.89</h5>
         </div>
       </div>
-      <div id="topcol" class="d-flex justify-content-between align-middle mx-2 pt-2 border-bottom border-secondary">
-        <div class="d-block">
+      <div id="topcol" class="row align-middle mx-2 pt-2 border-bottom border-secondary">
+        <div class="col-md-2">
           <h5>Asset/s</h5>
         </div>
-        <div class="d-block">
+        <div class="col-md">
           <h5>Units</h5>
         </div>
-        <div class="d-block">
+        <div class="col-md">
           <h5>Avg. open</h5>
         </div>
-        <div class="d-block">
+        <div class="col-md">
           <h5>Invested</h5>
         </div>
-        <div class="d-block">
+        <div class="col-md">
           <h5>P/L(%)</h5>
         </div>
-        <div class="d-block">
+        <div class="col-md">
           <h5>P/L($)</h5>
         </div>
-        <div class="d-block">
+        <div class="col-md">
           <h5>Value</h5>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between align-middle mx-2 pt-2 border-bottom border-secondary">
+        <div class="d-block d-flex">
+          <div class="d-inline">
+            <img src="/Resources/placeholder.png" alt="symbol" class="rounded-circle ticker-symbol">
+          </div>
+          <div class="d-inline" style="padding-left: 20px;">
+            <h5>BTC</h5>
+            <h5>Bitcoin Index</h5>
+          </div>
+        </div>
+        <div class="d-block">
+          <h5>1.01</h5>
+          <p class="text-secondary">Buying</p>
+        </div>
+        <div class="d-block">
+          <h5>23224.78</h5>
+        </div>
+        <div class="d-block">
+          <h5>$23,034.91</h5>
+        </div>
+        <div class="d-block">
+          <h5 class="text-danger">-0.96%</h5>
+        </div>
+        <div class="d-block">
+          <h5 class="text-danger">-$221.14</h5>
+        </div>
+        <div class="d-block">
+          <h5>$22,813.77</h5>
+        </div>
+        <div class="d-block">
+          <button class="border border-danger text-danger close-button"><b>Close</b></button>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-middle mx-2 pt-2 border-bottom border-secondary">
+        <div class="d-block d-flex">
+          <div class="d-inline">
+            <img src="/Resources/placeholder.png" alt="symbol" class="rounded-circle ticker-symbol">
+          </div>
+          <div class="d-inline" style="padding-left: 20px;">
+            <h5>BTC</h5>
+            <h5>Bitcoin Index</h5>
+          </div>
+        </div>
+        <div class="d-block">
+          <h5>1.01</h5>
+          <p class="text-secondary">Buying</p>
+        </div>
+        <div class="d-block">
+          <h5>23224.78</h5>
+        </div>
+        <div class="d-block">
+          <h5>$23,034.91</h5>
+        </div>
+        <div class="d-block">
+          <h5 class="text-danger">-0.96%</h5>
+        </div>
+        <div class="d-block">
+          <h5 class="text-danger">-$221.14</h5>
+        </div>
+        <div class="d-block">
+          <h5>$22,813.77</h5>
+        </div>
+        <div class="d-block">
+          <button class="border border-danger text-danger close-button"><b>Close</b></button>
         </div>
       </div>
 

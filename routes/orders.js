@@ -23,7 +23,7 @@ router.use(cookieParser())
 
 //TIME TO MAKE THE ORDERS PAGE AND ILL ROUTE IT TO /home/orders
 router.get('/orders', (req, res) => {
-    //wait up i gotta make static part of website first
+
     res.render("home/orders")
 })
 
