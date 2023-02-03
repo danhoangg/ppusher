@@ -42,19 +42,19 @@
         <h2>My Portfolio:</h2>
         <div class="d-block">
             <p>Available:</p>
-            <h5>$47,034.83</h5>
+            <h5> <%= locals.available %> </h5>
         </div>
         <div class="d-block">
           <p>Allocated:</p>
-          <h5>$76,358.03</h5>
+          <h5> <%= locals.allocated %> </h5>
         </div>
         <div class="d-block">
           <p>Profit/Loss:</p>
-          <h5 class="text-success">+$517.03</h5>
+          <h5 class= <%= locals.totalplcolor %> > <%= locals.totalpl %>  </h5>
         </div>
         <div class="d-block">
           <p>Total Equity:</p>
-          <h5>$123,909.89</h5>
+          <h5> <%= locals.equity %></h5>
         </div>
       </div>
       <div id="topcol" class="row align-middle mx-2 pt-2 border-bottom border-secondary">
@@ -79,74 +79,45 @@
         <div class="col-md">
           <h5>Value</h5>
         </div>
-      </div>
-      <div class="d-flex justify-content-between align-middle mx-2 pt-2 border-bottom border-secondary">
-        <div class="d-block d-flex">
-          <div class="d-inline">
-            <img src="/Resources/placeholder.png" alt="symbol" class="rounded-circle ticker-symbol">
-          </div>
-          <div class="d-inline" style="padding-left: 20px;">
-            <h5>BTC</h5>
-            <h5>Bitcoin Index</h5>
-          </div>
-        </div>
-        <div class="d-block">
-          <h5>1.01</h5>
-          <p class="text-secondary">Buying</p>
-        </div>
-        <div class="d-block">
-          <h5>23224.78</h5>
-        </div>
-        <div class="d-block">
-          <h5>$23,034.91</h5>
-        </div>
-        <div class="d-block">
-          <h5 class="text-danger">-0.96%</h5>
-        </div>
-        <div class="d-block">
-          <h5 class="text-danger">-$221.14</h5>
-        </div>
-        <div class="d-block">
-          <h5>$22,813.77</h5>
-        </div>
-        <div class="d-block">
-          <button class="border border-danger text-danger close-button"><b>Close</b></button>
-        </div>
+        <div class="col-md"></div>
       </div>
 
-      <div class="d-flex justify-content-between align-middle mx-2 pt-2 border-bottom border-secondary">
-        <div class="d-block d-flex">
-          <div class="d-inline">
-            <img src="/Resources/placeholder.png" alt="symbol" class="rounded-circle ticker-symbol">
+      <% locals.orders.forEach((order) => { %>
+        <div class="row mx-2 pt-2 border-bottom border-secondary">
+          <div class="col-md-2 d-flex">
+            <div class="d-inline">
+              <img src="/Resources/placeholder.png" alt="symbol" class="rounded-circle ticker-symbol">
+            </div>
+            <div class="d-inline" style="padding-left: 20px;">
+              <h5> <%= order.Ticker.toUpperCase() %> </h5>
+              <h5><%= order.displayName %></h5>
+            </div>
           </div>
-          <div class="d-inline" style="padding-left: 20px;">
-            <h5>BTC</h5>
-            <h5>Bitcoin Index</h5>
+          <div class="col-md">
+            <h5> <%= order.units %> </h5>
+            <p class="text-secondary"> <%= order.Type == 'buy' ? "Buying" : "Selling" %> </p>
+          </div>
+          <div class="col-md">
+            <h5> <%= order.AvgOpen%> </h5>
+          </div>
+          <div class="col-md">
+            <h5> <%= order.Invested %></h5>
+          </div>
+          <div class="col-md">
+            <h5 class= <%= order.valuecolor %>> <%= order.percentage %> </h5>
+          </div>
+          <div class="col-md">
+            <h5 class=<%= order.valuecolor %>> <%= order.numpl %> </h5>
+          </div>
+          <div class="col-md">
+            <h5> <%= order.value %> </h5>
+          </div>
+          <div class="col-md">
+            <button class="border border-danger text-danger close-button"><b>Close</b></button>
           </div>
         </div>
-        <div class="d-block">
-          <h5>1.01</h5>
-          <p class="text-secondary">Buying</p>
-        </div>
-        <div class="d-block">
-          <h5>23224.78</h5>
-        </div>
-        <div class="d-block">
-          <h5>$23,034.91</h5>
-        </div>
-        <div class="d-block">
-          <h5 class="text-danger">-0.96%</h5>
-        </div>
-        <div class="d-block">
-          <h5 class="text-danger">-$221.14</h5>
-        </div>
-        <div class="d-block">
-          <h5>$22,813.77</h5>
-        </div>
-        <div class="d-block">
-          <button class="border border-danger text-danger close-button"><b>Close</b></button>
-        </div>
-      </div>
+  
+      <% }) %>
 
       <!-- CONTAINER MAIN END -->
 

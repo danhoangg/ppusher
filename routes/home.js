@@ -26,7 +26,7 @@ router.use('/', ordersRouter)
 
 //function gets all info to be rendered on the page
 function getAccountInfo(username, callback) {
-    con.query("SELECT TransactionTable.Balance FROM UserTable JOIN TransactionTable ON UserTable.UserID = TransactionTable.UserID WHERE username = ?", username, function (err, result, fields) {
+    con.query("SELECT TransactionTable.Balance FROM UserTable JOIN TransactionTable ON UserTable.UserID = TransactionTable.UserID WHERE username = ?", [username], function (err, result, fields) {
         if (err) throw callback(err);
         callback(null, result[0].Balance)
     });
@@ -206,7 +206,7 @@ router.post('/', (req, res) => {
     if (err) throw err;
     newValues = {
       totalpl: totalpl,
-      currentcolor: currentcolor
+      currentcolor: currentcolor,
     }
     res.send([newValues, latestorders])
   })
