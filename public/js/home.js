@@ -17,11 +17,11 @@ setInterval(() => {
       $("#totalpl").removeClass()
       $("#totalpl").addClass(arr[0].currentcolor)
       arr[1].forEach((element, i) => {
-        $("#currentprice" + i).html(element.currentprice + "<small class='text-secondary'> USD &nbsp</small>")
+        $("#currentprice" + i).html(element.currentprice.toFixed(2) + "<small class='text-secondary'> USD &nbsp</small>")
         $("#percentchange" + i).text(element.percentage + "%")
         $("#percentchange" + i).removeClass()
         $("#percentchange" + i).addClass(element.percentagecolor)
       })
     })
   });
-}, 3000)
+}, 100)

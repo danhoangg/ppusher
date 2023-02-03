@@ -113,13 +113,6 @@ function getTotalValue(profitloss, callback) {
     });
 }
 
-function calcPercentage(value, invested) {
-    var percentage = value / invested;
-    percentage = percentage - 1
-    percentage = percentage * 100
-    return percentage
-}
-
 //so many callbacks :o
 //this looks like hell but read the function names and it should make sense
 //all this is is getting the data from the database and stock market and then rendering it on the page

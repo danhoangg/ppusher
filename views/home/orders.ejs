@@ -41,20 +41,20 @@
       <div id="topcol" class="d-flex justify-content-between align-middle mx-2 pt-3 border-bottom border-secondary">
         <h2>My Portfolio:</h2>
         <div class="d-block">
-            <p>Available:</p>
-            <h5> <%= locals.available %> </h5>
+            <h5>Available:</h5>
+            <h5 id="available"> <%= locals.available %> </h5>
         </div>
         <div class="d-block">
-          <p>Allocated:</p>
-          <h5> <%= locals.allocated %> </h5>
+          <h5>Allocated:</h5>
+          <h5 id="allocated"> <%= locals.allocated %> </h5>
         </div>
         <div class="d-block">
-          <p>Profit/Loss:</p>
-          <h5 class= <%= locals.totalplcolor %> > <%= locals.totalpl %>  </h5>
+          <h5>Profit/Loss:</h5>
+          <h5 id="totalpl" class= <%= locals.totalplcolor %> > <%= locals.totalpl %>  </h5>
         </div>
         <div class="d-block">
-          <p>Total Equity:</p>
-          <h5> <%= locals.equity %></h5>
+          <h5>Total Equity:</h5>
+          <h5 id="equity"> <%= locals.equity %></h5>
         </div>
       </div>
       <div id="topcol" class="row align-middle mx-2 pt-2 border-bottom border-secondary">
@@ -79,14 +79,14 @@
         <div class="col-md">
           <h5>Value</h5>
         </div>
-        <div class="col-md"></div>
+        <div class="col-md-1"></div>
       </div>
 
-      <% locals.orders.forEach((order) => { %>
+      <% locals.orders.forEach((order, i) => { %>
         <div class="row mx-2 pt-2 border-bottom border-secondary">
           <div class="col-md-2 d-flex">
             <div class="d-inline">
-              <img src="/Resources/placeholder.png" alt="symbol" class="rounded-circle ticker-symbol">
+              <img alt="symbol" class="rounded-circle ticker-symbol" src= <%= 'https://logo.clearbit.com/' + order.image + ".com" %> >
             </div>
             <div class="d-inline" style="padding-left: 20px;">
               <h5> <%= order.Ticker.toUpperCase() %> </h5>
@@ -104,16 +104,16 @@
             <h5> <%= order.Invested %></h5>
           </div>
           <div class="col-md">
-            <h5 class= <%= order.valuecolor %>> <%= order.percentage %> </h5>
+            <h5 id=<%="percentage" + i%> class= <%= order.valuecolor %>> <%= order.percentage %> </h5>
           </div>
           <div class="col-md">
-            <h5 class=<%= order.valuecolor %>> <%= order.numpl %> </h5>
+            <h5 id=<%="numpl" + i%> class=<%= order.valuecolor %>> <%= order.numpl %> </h5>
           </div>
           <div class="col-md">
-            <h5> <%= order.value %> </h5>
+            <h5 id=<%="value" + i%>> <%= order.value %> </h5>
           </div>
-          <div class="col-md">
-            <button class="border border-danger text-danger close-button"><b>Close</b></button>
+          <div class="col-md-1">
+            <button class="border border-danger text-danger close-button" onclick=<%= "closeOrder(" + i + ")" %>><b>Close</b></button>
           </div>
         </div>
   

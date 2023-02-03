@@ -53,8 +53,7 @@ function getPrices(tickers, callback) {
             }
             regularchangepercents.push(element.regularMarketChangePercent)
             regularMarketPrices.push(element.regularMarketPrice)
-            displayName.push(element.displayName)
-
+            displayName.push(element.longName)
         })
         callback(null, [bidprices, askprices, displayName, regularchangepercents, regularMarketPrices])
     });
@@ -70,14 +69,14 @@ function getProfitLoss(invested, current, avgopen, leverage, type) {
     return userValue
 }
 
-//TIME TO MAKE THE ORDERS PAGE AND ILL ROUTE IT TO /home/orders
-router.get('/orders', (req, res) => {
-    var username = req.cookies.username;
+//Pretty much just querying a database and calculating a few values and rendering them to the screen
+function updateValues(username, callback) {
     var allocated = 0;
     var totalpl = 0;
     var equity = 0;
     var tickers =[];
     getOrders(username, function (err, orders) {
+
         orders.reverse()
         getBalance(username, function (err, balance) {
             orders.forEach(order => {
@@ -85,6 +84,19 @@ router.get('/orders', (req, res) => {
                 tickers.push(order.Ticker)
             })
             
+            //If no orders, set all values to 0
+            if (tickers.length == 0) {
+                balance = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+                available = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+                allocated = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+                totalpl = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+                totalplcolor = 'text-success',
+                equity = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+                orders = []
+
+                callback(null, balance, available, allocated, totalpl, totalplcolor, equity, orders)
+            }
+
             getPrices(tickers, function(err, prices) {
                 //prices[0] is bidprices
                 //prices[1] is askprices
@@ -95,6 +107,7 @@ router.get('/orders', (req, res) => {
                     order.percentage = (((order.value / order.Invested) - 1) * 100).toFixed(2) + '%'
                     order.valuecolor = order.value > order.Invested ? 'text-success' : 'text-danger'
                     order.displayName = prices[2][i]
+                    order.image = order.displayName.split(' ')[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
                     order.units = (order.Invested / order.AvgOpen).toFixed(2)
                     order.Invested = order.Invested.toLocaleString('en-US', { style: 'currency', currency: 'USD' })        
 
@@ -103,23 +116,45 @@ router.get('/orders', (req, res) => {
                 })
                 
                 totalpl = (equity - allocated).toFixed(2)
-                equity = equity.toFixed(2)
+                equity = (balance + Number(totalpl)).toFixed(2)
+                
+                available = (balance - allocated).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                balance = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                allocated = allocated.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                totalplcolor = totalpl > 0 ? 'text-success' : 'text-danger'
+                totalpl = Number(totalpl).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                equity = Number(equity).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
 
-                res.render("home/orders", {
-                    username: username,
-                    balance: balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                    available: (balance - allocated).toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                    allocated: allocated.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                    totalpl: Number(totalpl).toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                    totalplcolor: totalpl > 0 ? 'text-success' : 'text-danger',
-                    equity: Number(equity).toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                    orders: orders
-                })
+                callback(null, balance, available, allocated, totalpl, totalplcolor, equity, orders)
+
             })
+        })
+    })
+}
+
+//TIME TO MAKE THE ORDERS PAGE AND ILL ROUTE IT TO /home/orders
+router.get('/orders', (req, res) => {
+    var username = req.cookies.username;
+    updateValues(username, function(err, balance, available, allocated, totalpl, totalplcolor, equity, orders) {
+        res.render("home/orders", {
+            username: username,
+            balance: balance,
+            available: available,
+            allocated: allocated,
+            totalpl: totalpl,
+            totalplcolor: totalplcolor,
+            equity: equity,
+            orders: orders
         })
     })
 })
 
-
+router.post('/orders', (req, res) => {
+    let username = req.cookies.username
+    updateValues(username, function (err, balance, available, allocated, totalpl, totalplcolor, equity, orders) {
+      if (err) throw err;
+      res.send([available, allocated, totalpl, totalplcolor, equity, orders])
+    })
+})
 
 module.exports = router
