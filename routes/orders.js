@@ -10,7 +10,8 @@ var con = mysql.createConnection({
     port: "3306",
     user: "sql7579297",
     password: "",
-    database: "sql7579297"
+    database: "sql7579297",
+    multipleStatements: true
 });
 
 con.connect(function (err) { });
@@ -22,7 +23,7 @@ router.use(bodyParser.json())
 router.use(cookieParser())
 
 function getOrders(username, callback) {
-    con.query("SELECT Type, Ticker, AvgOpen, Invested, Leverage FROM OrderTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?)", username, function (err, result, fields) {
+    con.query("SELECT Type, Ticker, AvgOpen, Invested, Leverage, OrderID FROM OrderTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?)", username, function (err, result, fields) {
         if (err) throw callback(err);
         callback(null, result)
     });
@@ -60,11 +61,7 @@ function getPrices(tickers, callback) {
 }
 
 function getProfitLoss(invested, current, avgopen, leverage, type) {
-    if (type == 'buy') {
-        value = (current / avgopen) * (invested * leverage)
-    } else {
-        value = (avgopen / current) * (invested * leverage)
-    }
+    value = type == 'buy' ? (current / avgopen) * (invested * leverage) : (avgopen / current) * (invested * leverage);
     userValue = (value - (invested * (leverage - 1))) * 0.99
     return userValue
 }
@@ -76,26 +73,28 @@ function updateValues(username, callback) {
     var equity = 0;
     var tickers =[];
     getOrders(username, function (err, orders) {
+        if (err) throw err
+
+        //If no orders, set all values to 0
+        if (!orders.length) {
+            balance = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+            available = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+            allocated = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+            totalpl = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+            totalplcolor = 'text-success',
+            equity = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+            orders = []
+
+            callback(null, balance, available, allocated, totalpl, totalplcolor, equity, orders)
+        }
 
         orders.reverse()
         getBalance(username, function (err, balance) {
+            if (err) throw err
             orders.forEach(order => {
                 allocated += order.Invested
                 tickers.push(order.Ticker)
             })
-            
-            //If no orders, set all values to 0
-            if (tickers.length == 0) {
-                balance = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                available = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                allocated = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                totalpl = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                totalplcolor = 'text-success',
-                equity = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                orders = []
-
-                callback(null, balance, available, allocated, totalpl, totalplcolor, equity, orders)
-            }
 
             getPrices(tickers, function(err, prices) {
                 //prices[0] is bidprices
@@ -109,7 +108,8 @@ function updateValues(username, callback) {
                     order.displayName = prices[2][i]
                     order.image = order.displayName.split(' ')[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
                     order.units = (order.Invested / order.AvgOpen).toFixed(2)
-                    order.Invested = order.Invested.toLocaleString('en-US', { style: 'currency', currency: 'USD' })        
+                    order.Invested = order.Invested.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                    order.orderid = order.OrderID        
 
                     equity += Number(order.value)
                     order.value = Number(order.value).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
@@ -132,9 +132,25 @@ function updateValues(username, callback) {
     })
 }
 
+//delete the order from the orders table and then add a transaction to the transactions table
+function closeOrder(userid, transaction, balance, orderid, callback) {
+    con.query('INSERT INTO TransactionTable (UserID, Transaction, Balance) VALUES (?, ?, ?); DELETE FROM OrderTable WHERE OrderID = ?', [userid, transaction, balance, orderid], function (err, results) {
+        if (err) throw callback(err)
+        console.log('Order successfully closed')
+    })
+}
+
+function getUserID(username, callback) {
+    con.query('SELECT UserID FROM UserTable WHERE username = ?', [username], function (err, results) {
+        if (err) throw callback(err)
+        callback(null, results[0].UserID)
+    })
+}
+
 //TIME TO MAKE THE ORDERS PAGE AND ILL ROUTE IT TO /home/orders
 router.get('/orders', (req, res) => {
     var username = req.cookies.username;
+    if (!username) res.redirect('/account/login')
     updateValues(username, function(err, balance, available, allocated, totalpl, totalplcolor, equity, orders) {
         res.render("home/orders", {
             username: username,
@@ -149,11 +165,45 @@ router.get('/orders', (req, res) => {
     })
 })
 
+//update values in realtime by constant post request to /home/orders
 router.post('/orders', (req, res) => {
     let username = req.cookies.username
     updateValues(username, function (err, balance, available, allocated, totalpl, totalplcolor, equity, orders) {
       if (err) throw err;
       res.send([available, allocated, totalpl, totalplcolor, equity, orders])
+    })
+})
+
+//gonna make post request to close order in /home/orders/closeorder
+router.post('/orders/closeorder', (req, res) => {
+    let orderid = req.body.orderID;
+    let username = req.cookies.username;
+    let closedOrder;
+
+    //get all orders from the datbase
+    getOrders(username, function(err, orders) {
+        if (err) throw err;
+        orders.reverse();
+        closedOrder = orders.find(order => order.OrderID == orderid);
+        if (!closedOrder) throw new Error('Order not found');
+        //get the balance of the user
+        getBalance(username, function(err, balance) {
+            if (err) throw err;
+            //get the current price of the stock
+            getPrices([closedOrder.Ticker], function(err, prices) {
+                if (err) throw err;
+                //get the profit/loss of the order
+                let orderValue = closedOrder.Type == 'buy' ? getProfitLoss(closedOrder.Invested, prices[0][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type) : getProfitLoss(closedOrder.Invested, prices[1][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type)
+                getUserID(username, function(err, userid) {
+                    let transaction = Number((orderValue - closedOrder.Invested).toFixed(2))
+                    let newBalance = Number(balance) + Number(transaction)
+                    closeOrder(userid, transaction, newBalance, orderid, function(err) {
+                        if (err) throw err;
+                        res.redirect('/home/orders')
+                    })
+                })
+            })
+        })
     })
 })
 

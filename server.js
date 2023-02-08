@@ -17,22 +17,7 @@ app.get('/', (req, res) => {
 })
 
 //checks if the user has a cookie of their username to check if they're logged inspect logged in
-//if not logged in the redirect to login
-
-/*
-Just testing how to use cookies
-app.get('/setcookie', (req, res) => {
-  res.cookie(`username`, `Ravioli`, {
-    maxAge: 5*60
-  })
-  res.send('Cookie saved successfully')
-})
-
-app.get('/getcookie', (req, res) => {
-  let cookie = req.cookies.username
-  res.send(cookie)
-})
-*/
+//if not logged in the redirect to login page
 
 //importing the account and home router
 const homeRouter = require('./routes/home')

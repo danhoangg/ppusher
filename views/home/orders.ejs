@@ -90,7 +90,7 @@
             </div>
             <div class="d-inline" style="padding-left: 20px;">
               <h5> <%= order.Ticker.toUpperCase() %> </h5>
-              <h5><%= order.displayName %></h5>
+              <p><%= order.displayName %></p>
             </div>
           </div>
           <div class="col-md">
@@ -113,7 +113,7 @@
             <h5 id=<%="value" + i%>> <%= order.value %> </h5>
           </div>
           <div class="col-md-1">
-            <button class="border border-danger text-danger close-button" onclick=<%= "closeOrder(" + i + ")" %>><b>Close</b></button>
+            <button class="border border-danger text-danger close-button" onclick=<%= "closeOrder(" + order.orderid + ")" %>><b>Close</b></button>
           </div>
         </div>
   

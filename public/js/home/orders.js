@@ -1,5 +1,14 @@
-function closeOrder(orderId) {
-    console.log("LOOOL", orderId)
+function closeOrder(orderID) {
+    fetch('/home/orders/closeorder', {
+      method: 'POST',
+      redirect: 'follow',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        orderID: orderID
+      })
+    })
 }
 
 setInterval(() => {
@@ -28,4 +37,4 @@ setInterval(() => {
         })
       })
     });
-}, 100)
+}, 1000)
