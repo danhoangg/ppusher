@@ -8,6 +8,12 @@ function closeOrder(orderID) {
       body: JSON.stringify({
         orderID: orderID
       })
+    }).then((res) => {
+      if (res.status == 200) {
+        location.reload();
+      } else {
+        alert('Error closing order');
+      }
     })
 }
 

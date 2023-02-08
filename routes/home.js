@@ -28,6 +28,7 @@ router.use('/', ordersRouter)
 function getAccountInfo(username, callback) {
     con.query("SELECT TransactionTable.Balance FROM UserTable JOIN TransactionTable ON UserTable.UserID = TransactionTable.UserID WHERE username = ?", [username], function (err, result, fields) {
         if (err) throw callback(err);
+        result.reverse();
         callback(null, result[0].Balance)
     });
 }
@@ -123,8 +124,8 @@ function updateValues(cookie, callback) {
             if (err) throw err;
             if (transactions.length === 0) {transactions = [{Balance: balance}]}
             monthpl = balance - transactions[0].Balance
-            monthpl = monthpl.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
             if (monthpl => 0) { monthcolor = "text-success" } else { monthcolor = "text-danger" }
+            monthpl = monthpl.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
             getProfitLoss(cookie, function (err, profitloss) {
                 if (err) throw err;
                 if (profitloss.length == 0) {
@@ -180,7 +181,7 @@ router.get('/', (req, res) => {
                 monthcolor: monthcolor,
                 cashavailable: cashavailable.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
                 totalinvested: totalinvested.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-                totalpl: totalpl,
+                totalpl: totalpl.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
                 currentcolor: currentcolor,
                 latestorders: latestorders
             })
@@ -198,7 +199,7 @@ router.post('/', (req, res) => {
   updateValues(cookie, function (err, balance, monthpl, monthcolor, cashavailable, totalinvested, totalpl, currentcolor, latestorders) {
     if (err) throw err;
     newValues = {
-      totalpl: totalpl,
+      totalpl: totalpl.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
       currentcolor: currentcolor,
     }
     res.send([newValues, latestorders])

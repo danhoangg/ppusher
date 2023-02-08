@@ -46,11 +46,11 @@ function getPrices(tickers, callback) {
         data.forEach(element => {
             //When stocks are pre or post state, there are no bid and ask prices therefore must use regularmarketprice
             if (element.bid == 0 || element.ask == 0) {
-              bidprices.push(element.regularMarketPrice)
-              askprices.push(element.regularMarketPrice)
+                bidprices.push(element.regularMarketPrice)
+                askprices.push(element.regularMarketPrice)
             } else {
-              bidprices.push(element.bid)
-              askprices.push(element.ask)
+                bidprices.push(element.bid)
+                askprices.push(element.ask)
             }
             regularchangepercents.push(element.regularMarketChangePercent)
             regularMarketPrices.push(element.regularMarketPrice)
@@ -71,32 +71,32 @@ function updateValues(username, callback) {
     var allocated = 0;
     var totalpl = 0;
     var equity = 0;
-    var tickers =[];
+    var tickers = [];
     getOrders(username, function (err, orders) {
         if (err) throw err
-
-        //If no orders, set all values to 0
-        if (!orders.length) {
-            balance = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-            available = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-            allocated = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-            totalpl = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-            totalplcolor = 'text-success',
-            equity = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
-            orders = []
-
-            callback(null, balance, available, allocated, totalpl, totalplcolor, equity, orders)
-        }
-
-        orders.reverse()
         getBalance(username, function (err, balance) {
+
+            //If no orders, set all values to 0
+            if (!orders.length) {
+                balance = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                available = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                allocated = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                totalpl = Number("0").toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                totalplcolor = 'text-success'
+                equity = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                orders = []
+
+                callback(null, balance, available, allocated, totalpl, totalplcolor, equity, orders)
+            }
+
+            orders.reverse()
             if (err) throw err
             orders.forEach(order => {
                 allocated += order.Invested
                 tickers.push(order.Ticker)
             })
 
-            getPrices(tickers, function(err, prices) {
+            getPrices(tickers, function (err, prices) {
                 //prices[0] is bidprices
                 //prices[1] is askprices
                 //prices[2] is displayName
@@ -106,18 +106,18 @@ function updateValues(username, callback) {
                     order.percentage = (((order.value / order.Invested) - 1) * 100).toFixed(2) + '%'
                     order.valuecolor = order.value > order.Invested ? 'text-success' : 'text-danger'
                     order.displayName = prices[2][i]
-                    order.image = order.displayName.split(' ')[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+                    order.image = order.displayName.split(' ')[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "")
                     order.units = (order.Invested / order.AvgOpen).toFixed(2)
                     order.Invested = order.Invested.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-                    order.orderid = order.OrderID        
+                    order.orderid = order.OrderID
 
                     equity += Number(order.value)
                     order.value = Number(order.value).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
                 })
-                
+
                 totalpl = (equity - allocated).toFixed(2)
                 equity = (balance + Number(totalpl)).toFixed(2)
-                
+
                 available = (balance - allocated).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
                 balance = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
                 allocated = allocated.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
@@ -151,7 +151,7 @@ function getUserID(username, callback) {
 router.get('/orders', (req, res) => {
     var username = req.cookies.username;
     if (!username) res.redirect('/account/login')
-    updateValues(username, function(err, balance, available, allocated, totalpl, totalplcolor, equity, orders) {
+    updateValues(username, function (err, balance, available, allocated, totalpl, totalplcolor, equity, orders) {
         res.render("home/orders", {
             username: username,
             balance: balance,
@@ -169,8 +169,8 @@ router.get('/orders', (req, res) => {
 router.post('/orders', (req, res) => {
     let username = req.cookies.username
     updateValues(username, function (err, balance, available, allocated, totalpl, totalplcolor, equity, orders) {
-      if (err) throw err;
-      res.send([available, allocated, totalpl, totalplcolor, equity, orders])
+        if (err) throw err;
+        res.send([available, allocated, totalpl, totalplcolor, equity, orders])
     })
 })
 
@@ -181,25 +181,25 @@ router.post('/orders/closeorder', (req, res) => {
     let closedOrder;
 
     //get all orders from the datbase
-    getOrders(username, function(err, orders) {
+    getOrders(username, function (err, orders) {
         if (err) throw err;
         orders.reverse();
         closedOrder = orders.find(order => order.OrderID == orderid);
         if (!closedOrder) throw new Error('Order not found');
         //get the balance of the user
-        getBalance(username, function(err, balance) {
+        getBalance(username, function (err, balance) {
             if (err) throw err;
             //get the current price of the stock
-            getPrices([closedOrder.Ticker], function(err, prices) {
+            getPrices([closedOrder.Ticker], function (err, prices) {
                 if (err) throw err;
                 //get the profit/loss of the order
                 let orderValue = closedOrder.Type == 'buy' ? getProfitLoss(closedOrder.Invested, prices[0][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type) : getProfitLoss(closedOrder.Invested, prices[1][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type)
-                getUserID(username, function(err, userid) {
+                getUserID(username, function (err, userid) {
                     let transaction = Number((orderValue - closedOrder.Invested).toFixed(2))
                     let newBalance = Number(balance) + Number(transaction)
-                    closeOrder(userid, transaction, newBalance, orderid, function(err) {
+                    closeOrder(userid, transaction, newBalance, orderid, function (err) {
                         if (err) throw err;
-                        res.redirect('/home/orders')
+                        res.sendStatus(200)
                     })
                 })
             })
