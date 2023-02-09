@@ -185,7 +185,7 @@ router.post('/orders/closeorder', (req, res) => {
         if (err) throw err;
         orders.reverse();
         closedOrder = orders.find(order => order.OrderID == orderid);
-        if (!closedOrder) throw new Error('Order not found');
+        if (!closedOrder) res.sendStatus(404);
         //get the balance of the user
         getBalance(username, function (err, balance) {
             if (err) throw err;
