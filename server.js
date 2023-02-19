@@ -22,8 +22,10 @@ app.get('/', (req, res) => {
 //importing the account and home router
 const homeRouter = require('./routes/home')
 const accountRouter = require('./routes/account')
+const stocksRouter = require('./routes/stocks')
 app.use('/home', homeRouter)
 app.use('/account', accountRouter)
+app.use('/stocks', stocksRouter)
 
 
 //if the user searchs something that doesn't exist on the site, send 404 status code

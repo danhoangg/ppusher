@@ -121,8 +121,8 @@ function updateValues(cookie, callback) {
         getTransactions(cookie, function (err, transactions) {
             if (err) throw err;
             if (transactions.length === 0) {transactions = [{Balance: balance}]}
-            monthpl = balance - transactions[0].Balance
-            if (monthpl => 0) { monthcolor = "text-success" } else { monthcolor = "text-danger" }
+            var monthpl = balance - transactions[0].Balance
+            var monthcolor = monthpl >= 0 ? "text-success" : "text-danger"
             monthpl = monthpl.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
             getProfitLoss(cookie, function (err, profitloss) {
                 if (err) throw err;

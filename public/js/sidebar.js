@@ -37,3 +37,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
      // Your code to run since DOM is loaded and ready
 });
+
+//redirect to stocks page when enter is pressed
+document.getElementById("searchbar").addEventListener("keydown", function (e) {
+    if (e.code === "Enter") {  //checks whether the pressed key is "Enter"
+      window.location.replace("/stocks/" + document.getElementById("searchbar").value);
+    }
+});
