@@ -5,15 +5,13 @@ const si = require("stock-info")
 
 var mysql = require('mysql');
 
-var con = mysql.createConnection({
+var con = mysql.createPool({
     host: "sql7.freemysqlhosting.net",
     port: "3306",
-    user: "sql7579297",
+    user: "sql7598748",
     password: "",
-    database: "sql7579297"
+    database: "sql7598748",
 });
-
-con.connect(function (err) { });
 
 const router = express.Router()
 

@@ -5,16 +5,14 @@ const si = require("stock-info")
 
 var mysql = require('mysql');
 
-var con = mysql.createConnection({
+var con = mysql.createPool({
     host: "sql7.freemysqlhosting.net",
     port: "3306",
-    user: "sql7579297",
+    user: "sql7598748",
     password: "",
-    database: "sql7579297",
+    database: "sql7598748",
     multipleStatements: true
 });
-
-con.connect(function (err) { });
 
 const router = express.Router()
 
@@ -147,6 +145,12 @@ function getUserID(username, callback) {
     })
 }
 
+function checkTradeable(ticker, callback) {
+    si.getSingleStockInfo(ticker).then(data => {
+        callback(null, data.tradeable)
+    });
+}
+
 //TIME TO MAKE THE ORDERS PAGE AND ILL ROUTE IT TO /home/orders
 router.get('/orders', (req, res) => {
     var username = req.cookies.username;
@@ -185,21 +189,32 @@ router.post('/orders/closeorder', (req, res) => {
         if (err) throw err;
         orders.reverse();
         closedOrder = orders.find(order => order.OrderID == orderid);
-        if (!closedOrder) res.sendStatus(404);
-        //get the balance of the user
-        getBalance(username, function (err, balance) {
-            if (err) throw err;
-            //get the current price of the stock
-            getPrices([closedOrder.Ticker], function (err, prices) {
+        if (!closedOrder) {
+            res.sendStatus(403);
+            return;
+        }
+
+        //Check if the order is tradeable
+        checkTradeable(closedOrder.Ticker, function (err, tradeable) {
+            if (!tradeable) {
+                res.sendStatus(405);
+                return;
+            }
+            //get the balance of the user
+            getBalance(username, function (err, balance) {
                 if (err) throw err;
-                //get the profit/loss of the order
-                let orderValue = closedOrder.Type == 'buy' ? getProfitLoss(closedOrder.Invested, prices[0][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type) : getProfitLoss(closedOrder.Invested, prices[1][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type)
-                getUserID(username, function (err, userid) {
-                    let transaction = Number((orderValue - closedOrder.Invested).toFixed(2))
-                    let newBalance = Number(balance) + Number(transaction)
-                    closeOrder(userid, transaction, newBalance, orderid, function (err) {
-                        if (err) throw err;
-                        res.sendStatus(200)
+                //get the current price of the stock
+                getPrices([closedOrder.Ticker], function (err, prices) {
+                    if (err) throw err;
+                    //get the profit/loss of the order
+                    let orderValue = closedOrder.Type == 'buy' ? getProfitLoss(closedOrder.Invested, prices[0][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type) : getProfitLoss(closedOrder.Invested, prices[1][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type)
+                    getUserID(username, function (err, userid) {
+                        let transaction = Number((orderValue - closedOrder.Invested).toFixed(2))
+                        let newBalance = Number(balance) + Number(transaction)
+                        closeOrder(userid, transaction, newBalance, orderid, function (err) {
+                            if (err) throw err;
+                            res.redirect('/home/orders')
+                        })
                     })
                 })
             })

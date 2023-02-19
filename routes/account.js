@@ -5,17 +5,16 @@ const crypto = require('crypto')
 
 var mysql = require('mysql');
 
-var con = mysql.createConnection({
+var con = mysql.createPool({
   host: "sql7.freemysqlhosting.net",
   port: "3306",
-  user: "sql7579297",
+  user: "sql7598748",
   password: "",
-  database: "sql7579297"
+  database: "sql7598748",
 });
 
 //Making a router for the account section to keep the main server.js look clean
 //Will also make a router for the home page sections
-con.connect(function(err) {});
 
 //Important, all functions involving mysql must use callback functions so bc of asynchronous programming
 //Checks if the user exists in the database

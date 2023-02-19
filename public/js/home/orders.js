@@ -1,4 +1,7 @@
 function closeOrder(orderID) {
+  setTimeout(() => {
+    location.reload()
+  }, 400);
     fetch('/home/orders/closeorder', {
       method: 'POST',
       redirect: 'follow',
@@ -8,10 +11,11 @@ function closeOrder(orderID) {
       body: JSON.stringify({
         orderID: orderID
       })
+    }).then((res) => {
+      if (res.status === 405) {
+        alert("Markets not tradeable, not able to close order")
+      }
     })
-    setTimeout(() => {
-      location.reload()
-    }, 400);
 }
 
 setInterval(() => {
