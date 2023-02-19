@@ -118,15 +118,15 @@
             </div>
         </div>
 
-        <div class="d-block pt-4 px-5">
+        <div class="d-block pt-2 px-5">
             <div class="d-flex">
                 <div class="d-inline">
                     <button class="d-block btn btn-success btn-lg mx-2" onclick= "buy()" >BUY</button>
-                    <p class="text-success d-block text-center"> <%= locals.bid %> </p>
+                    <p class="text-success d-block text-center"> <%= locals.bid || locals.price %> </p>
                 </div>
                 <div class="d-inline">
                     <button class="d-block btn btn-danger btn-lg mx-2" onclick= "sell()" >SELL</button>
-                    <p class="text-danger d-block text-center"> <%= locals.ask %> </p>
+                    <p class="text-danger d-block text-center"> <%= locals.ask || locals.price %> </p>
                 </div>
             </div>
         </div>
