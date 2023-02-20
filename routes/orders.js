@@ -104,7 +104,7 @@ function updateValues(username, callback) {
                     order.percentage = (((order.value / order.Invested) - 1) * 100).toFixed(2) + '%'
                     order.valuecolor = order.value > order.Invested ? 'text-success' : 'text-danger'
                     order.displayName = prices[2][i]
-                    order.image = order.displayName.split(' ')[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "")
+                    order.image = order.displayName.split(' ')[0].split(/([_\W])/)[0];
                     order.units = (order.Invested / order.AvgOpen).toFixed(2)
                     order.Invested = order.Invested.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
                     order.orderid = order.OrderID

@@ -122,11 +122,11 @@
             <div class="d-flex">
                 <div class="d-inline">
                     <button class="d-block btn btn-success btn-lg mx-2" onclick= "buy()" >BUY</button>
-                    <p id="bid" class="text-success d-block text-center"> <%= locals.bid || locals.price %> </p>
+                    <p id="ask" class="text-success d-block text-center"> <%= locals.ask || locals.price %> </p>
                 </div>
                 <div class="d-inline">
                     <button class="d-block btn btn-danger btn-lg mx-2" onclick= "sell()" >SELL</button>
-                    <p id="ask" class="text-danger d-block text-center"> <%= locals.ask || locals.price %> </p>
+                    <p id="bid" class="text-danger d-block text-center"> <%= locals.bid || locals.price %> </p>
                 </div>
             </div>
         </div>

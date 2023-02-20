@@ -30,7 +30,7 @@ function stockInfo(ticker, callback) {
         quote.displayName = data.longName
         quote.bid = data.bid;
         quote.ask = data.ask;
-        quote.image = data.longName.split(' ')[0].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+        quote.image = data.longName.split(' ')[0].split(/([_\W])/)[0];
         callback(null, quote);
     }).catch((err) => {
         callback(err)
@@ -108,12 +108,18 @@ function getBalance(username, callback) {
 
 //get userid from the username
 function getUserID(username, callback) {
-    return;
+    con.query("SELECT UserID FROM UserTable WHERE username = ?", username, function (err, result, fields) {
+        if (err) throw callback(err);
+        callback(null, result[0].UserID)
+    });
 }
 
 //store the order into the order table in the database
 function storeOrder(userid, type, ticker, avgopen, invested, leverage, stoploss, takeprofit, callback) {
-    return;
+    con.query("INSERT INTO OrderTable (UserID, Type, Ticker, AvgOpen, Invested, Leverage, StopLoss, TakeProfit) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [userid, type, ticker, avgopen, invested, leverage, stoploss, takeprofit], function (err, result, fields) {
+        if (err) throw callback(err);
+        callback(null, result)
+    });
 }
 
 router.post('/placeorder', (req, res) => {
@@ -137,7 +143,7 @@ router.post('/placeorder', (req, res) => {
                 }
 
                 //Checking if stock is tradeable
-                if (quote.tradeable) {
+                if (!quote.tradeable) {
                     res.send(['Stock is not tradeable, unable to place order'])
 
                     //checking validity of the stop losses and take profits
@@ -151,7 +157,13 @@ router.post('/placeorder', (req, res) => {
                     res.send(['Insufficient funds'])
                 } else {
                     //Now that all checks are done, order can be placed in the database
-
+                    getUserID(username, (err, userid) => {
+                        if (err) throw err;
+                        storeOrder(userid, order.type, order.ticker, quote.price, order.invested, order.leverage, order.stoploss, order.takeprofit, (err, result) => {
+                            if (err) throw err;
+                            res.send(['Order placed successfully'])
+                        })
+                    })
                     
                 }
 
