@@ -6,3 +6,11 @@
 .close-button {
     border-radius: 25px;
 }
+
+a {
+    color: inherit;
+} 
+
+a:hover {
+    color: inherit;
+}

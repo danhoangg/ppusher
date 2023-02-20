@@ -46,7 +46,7 @@
 
     <!-- CONTAINER MAIN START -->
 
-    <div id="orderbuyinput" class="position-absolute bg-primary text-light px-2 pt-3 pb-0 rounded d-none" style="top: 1%; left: 37%;">
+    <div id="orderbuyinput" class="position-absolute bg-primary text-light px-2 pt-3 pb-0 rounded d-none" style="top: 1%; left: 8%;">
         <div class="d-flex">
             <div class="d-inline px-2">
                 <h5 class="d-block">Invested:</h5>
@@ -73,7 +73,7 @@
         
     </div>
 
-    <div id="ordersellinput" class="position-absolute bg-primary text-light px-2 pt-3 pb-0 rounded d-none" style="top: 1%; left: 37%;">
+    <div id="ordersellinput" class="position-absolute bg-primary text-light px-2 pt-3 pb-0 rounded d-none" style="top: 1%; left: 8%;">
         <div class="d-flex">
             <div class="d-inline px-2">
                 <h5 class="d-block">Invested:</h5>
@@ -108,8 +108,8 @@
             <div class="d-inline py-1">
                 <div class="d-block">
                     <h3 class="d-inline"> <%= locals.ticker.toUpperCase() || "TICKER" %> </h3>
-                    <h3 class="d-inline" style="position: absolute; top:18px;"> | </h3>
-                    <p class="d-inline">&nbsp;&nbsp;&nbsp; <%= locals.displayName || "DISPLAYNAME" %> </p>
+                    <p class="d-inline" style="font-size: 30px; font-weight: 100;"> | </p>
+                    <p class="d-inline">&nbsp;<%= locals.displayName || "DISPLAYNAME" %> </p>
                 </div>
                 <div class="d-block py-1">
                     <h5 id="price" class="d-inline"><%= locals.price || "PRICE" %></h5>
@@ -122,11 +122,11 @@
             <div class="d-flex">
                 <div class="d-inline">
                     <button class="d-block btn btn-success btn-lg mx-2" onclick= "buy()" >BUY</button>
-                    <p class="text-success d-block text-center"> <%= locals.bid || locals.price %> </p>
+                    <p id="bid" class="text-success d-block text-center"> <%= locals.bid || locals.price %> </p>
                 </div>
                 <div class="d-inline">
                     <button class="d-block btn btn-danger btn-lg mx-2" onclick= "sell()" >SELL</button>
-                    <p class="text-danger d-block text-center"> <%= locals.ask || locals.price %> </p>
+                    <p id="ask" class="text-danger d-block text-center"> <%= locals.ask || locals.price %> </p>
                 </div>
             </div>
         </div>

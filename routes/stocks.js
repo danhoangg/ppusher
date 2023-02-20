@@ -106,10 +106,19 @@ function getBalance(username, callback) {
     });
 }
 
+//get userid from the username
+function getUserID(username, callback) {
+    return;
+}
+
+//store the order into the order table in the database
+function storeOrder(userid, type, ticker, avgopen, invested, leverage, stoploss, takeprofit, callback) {
+    return;
+}
+
 router.post('/placeorder', (req, res) => {
     var username = req.cookies.username;
     var order = req.body;
-    console.log(order)
     orderStockInfo(order.ticker, order.type, (err, quote) => {
         if(err) throw err;
 
@@ -141,11 +150,12 @@ router.post('/placeorder', (req, res) => {
                 } else if (balance - total < order.invested) {
                     res.send(['Insufficient funds'])
                 } else {
-                    res.send(['Order Placed'])
+                    //Now that all checks are done, order can be placed in the database
+
+                    
                 }
 
-                //Now that all checks are done, order can be placed in the database
-
+                
             })
         })
 
@@ -162,7 +172,9 @@ router.post('/:ticker', (req, res) => {
             price: quote.regularMarketPrice,
             change: quote.regularChange,
             changePercent: quote.regularChangePercent,
-            changeColor: quote.regularChange >= 0 ? 'text-success' : 'text-danger'
+            changeColor: quote.regularChange >= 0 ? 'text-success' : 'text-danger',
+            bid: quote.bid,
+            ask: quote.ask
         })
     })
 })

@@ -1,11 +1,19 @@
 function buy() {
-    $("#ordersellinput").addClass("d-none")
-    $("#orderbuyinput").removeClass("d-none")
+    if ($("#orderbuyinput").hasClass("d-none")) {
+      $("#ordersellinput").addClass("d-none")
+      $("#orderbuyinput").removeClass("d-none")
+    } else {
+      $("#orderbuyinput").addClass("d-none")
+    }
 }
 
 function sell() {
+  if ($("#ordersellinput").hasClass("d-none")) {
     $("#orderbuyinput").addClass("d-none")
     $("#ordersellinput").removeClass("d-none")
+  } else {
+    $("#ordersellinput").addClass("d-none")
+  }
 }
 
 function placebuyorder(ticker) {
@@ -59,8 +67,8 @@ function placesellorder(ticker) {
         body: JSON.stringify(data)
       }).then((res) => {
         res.json().then((arr) => {
-            $("#error").text(arr[0])
-            $("#error2").text(arr[0])
+          $("#error").text(arr[0])
+          $("#error2").text(arr[0])
         })
       })
 }
@@ -76,11 +84,13 @@ setInterval(() => {
         'content-type': 'application/json'
       }
     }).then((res) => {
-      res.json().then((arr) => {
-        $("#price").text(arr.price);
-        $("#change").html("&nbsp;&nbsp;&nbsp;&nbsp;" + arr.change.toFixed(2) + "(" + arr.changePercent.toFixed(2) + "%)" )
-        $("#change").removeClass('text-success text-danger')
-        $("#change").addClass(arr.changeColor)
-      })
+        res.json().then((arr) => {
+          $("#price").text(arr.price);
+          $("#change").html("&nbsp;&nbsp;&nbsp;&nbsp;" + arr.change.toFixed(2) + "(" + arr.changePercent.toFixed(2) + "%)")
+          $("#change").removeClass('text-success text-danger')
+          $("#change").addClass(arr.changeColor)
+          $("#bid").text(arr.bid)
+          $("#ask").text(arr.ask)
+        })
     });
   }, 1000)
