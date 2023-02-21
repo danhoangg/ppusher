@@ -5,13 +5,24 @@ const crypto = require('crypto')
 
 var mysql = require('mysql');
 
-var con = mysql.createPool({
+var connection = mysql.createPool({
   host: "sql7.freemysqlhosting.net",
   port: "3306",
   user: "sql7598748",
   password: "",
   database: "sql7598748",
+  multipleStatements: true
 });
+
+connection.on('connection', function (connection) {
+  console.log('Pool id %d connected', connection.threadId);
+});
+
+connection.on('enqueue', function () {
+  console.log('Waiting for available connection slot');
+});
+
+global.con = connection
 
 //Making a router for the account section to keep the main server.js look clean
 //Will also make a router for the home page sections

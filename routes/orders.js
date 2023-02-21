@@ -5,7 +5,7 @@ const si = require("stock-info")
 
 var mysql = require('mysql');
 
-var con = mysql.createPool({
+var connection = mysql.createPool({
     host: "sql7.freemysqlhosting.net",
     port: "3306",
     user: "sql7598748",
@@ -13,6 +13,16 @@ var con = mysql.createPool({
     database: "sql7598748",
     multipleStatements: true
 });
+
+connection.on('connection', function (connection) {
+    console.log('Pool id %d connected', connection.threadId);
+});
+
+connection.on('enqueue', function () {
+    console.log('Waiting for available connection slot');
+});
+
+global.con = connection
 
 const router = express.Router()
 
@@ -95,6 +105,7 @@ function updateValues(username, callback) {
             })
 
             getPrices(tickers, function (err, prices) {
+                if (err) throw err
                 //prices[0] is bidprices
                 //prices[1] is askprices
                 //prices[2] is displayName
@@ -152,7 +163,7 @@ function checkTradeable(ticker, callback) {
 }
 
 //TIME TO MAKE THE ORDERS PAGE AND ILL ROUTE IT TO /home/orders
-router.get('/orders', (req, res) => {
+router.get('/', (req, res) => {
     var username = req.cookies.username;
     if (!username) res.redirect('/account/login')
     updateValues(username, function (err, balance, available, allocated, totalpl, totalplcolor, equity, orders) {
@@ -170,7 +181,7 @@ router.get('/orders', (req, res) => {
 })
 
 //update values in realtime by constant post request to /home/orders
-router.post('/orders', (req, res) => {
+router.post('/', (req, res) => {
     let username = req.cookies.username
     updateValues(username, function (err, balance, available, allocated, totalpl, totalplcolor, equity, orders) {
         if (err) throw err;
@@ -179,7 +190,7 @@ router.post('/orders', (req, res) => {
 })
 
 //gonna make post request to close order in /home/orders/closeorder
-router.post('/orders/closeorder', (req, res) => {
+router.post('/closeorder', (req, res) => {
     let orderid = req.body.orderID;
     let username = req.cookies.username;
     let closedOrder;
@@ -196,6 +207,7 @@ router.post('/orders/closeorder', (req, res) => {
 
         //Check if the order is tradeable
         checkTradeable(closedOrder.Ticker, function (err, tradeable) {
+            if (err) throw err
             if (!tradeable) {
                 res.sendStatus(405);
                 return;

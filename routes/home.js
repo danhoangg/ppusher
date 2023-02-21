@@ -5,13 +5,24 @@ const si = require("stock-info")
 
 var mysql = require('mysql');
 
-var con = mysql.createPool({
+var connection = mysql.createPool({
     host: "sql7.freemysqlhosting.net",
     port: "3306",
     user: "sql7598748",
     password: "",
     database: "sql7598748",
+    multipleStatements: true
 });
+
+connection.on('connection', function (connection) {
+    console.log('Pool id %d connected', connection.threadId);
+});
+
+connection.on('enqueue', function () {
+    console.log('Waiting for available connection slot');
+});
+
+global.con = connection
 
 const router = express.Router()
 
@@ -20,7 +31,9 @@ router.use(bodyParser.json())
 router.use(cookieParser())
 
 const ordersRouter = require('./orders')
-router.use('/', ordersRouter)
+const historyRouter = require('./history')
+router.use('/orders', ordersRouter)
+router.use('/history', historyRouter)
 
 //function gets all info to be rendered on the page
 function getAccountInfo(username, callback) {
@@ -99,6 +112,7 @@ function getTotalValue(profitloss, callback) {
         stocks.push(element.Ticker)
     })
     getPrices(stocks, function (err, bidprices, askprices, regularchangepercents, regularMarketPrices) {
+        if (err) throw err
         profitloss.forEach(element => {
             totalinvested += element.Invested;
             if (element.Type == "buy") {
