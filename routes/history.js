@@ -30,10 +30,33 @@ router.use(bodyParser.urlencoded({ extended: true }))
 router.use(bodyParser.json())
 router.use(cookieParser())
 
+function getAllTransactions(username, callback) {
+    con.query("SELECT Date, Balance FROM TransactionTable JOIN UserTable ON UserTable.UserID = TransactionTable.UserID WHERE UserTable.Username = ?", username , function (err, result, fields) {
+        if (err) callback(err)
+        callback(null, result)
+    })
+}
+
 router.get('/', (req, res) => {
     let username = req.cookies.username;
-    res.render("home/history", {
-        username: username
+    var data = [];
+
+    getAllTransactions(username, (err, results) => {
+        
+        for (i=0; i<results.length; i++) {
+            var date = String(results[i].Date);
+            //converting the date into a readable format for graph
+            temp = date.split('T')
+            date = temp[0] + "" + temp[1].split('.')[0]
+
+            var balance = results[i].Balance;
+            data.push([date, balance])
+        }
+
+        res.render("home/history", {
+            username: username,
+            data: data
+        })
     })
 })
 

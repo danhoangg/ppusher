@@ -6,7 +6,13 @@
     <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css' rel='stylesheet'>
     <link href='https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" type="image/x-icon" href="/Resources/favicon.jpeg">
+    
     <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+    <!-- Scripts to use anychartjs -->
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-bundle.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-base.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-cartesian.min.js"></script>
 
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/master.css">
@@ -48,14 +54,36 @@
 <h2>Portfolio History</h2>
 <br>
 
-<div id="container"></div>
+<div id="container" style="height: 500px;"></div>
 
 <!-- CONTAINER MAIN END -->
 
-    <script type='text/javascript'
-        src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js'></script>
-    <script src="/js/sidebar.js"></script>
-    <script src="/js/home.js"></script>
+<script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-cartesian.min.js"></script>
+
+<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js'></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/home.js"></script>
+
+<script type="text/javascript"> 
+
+    var serverData = '<%= locals.data %>'
+    var split = serverData.split(',')
+    var data = []
+    for(i = 0; i<split.length; i += 2) {
+        data.push([split[i], split[i+1]])
+    }
+
+    chart = anychart.line();
+
+    var series = chart.spline(data);
+    series.name("Value")
+
+    chart.title("Portfolio History");
+    chart.container("container");
+
+    chart.draw()
+
+</script>
 
     <script type="text/javascript">
         var myLink = document.querySelector('a[href="#"]');

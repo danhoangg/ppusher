@@ -172,6 +172,7 @@ function updateValues(cookie, callback) {
                     })
                     latestorders = latestorders.reverse()
                     latestorders = latestorders.slice(0, 3)
+                    console.log(latestorders)
                     callback(null, balance, monthpl, monthcolor, cashavailable, totalinvested, totalpl, currentcolor, latestorders)
                 })
             });

@@ -97,7 +97,7 @@ function orderStockInfo(ticker, type, callback) {
     let quote = {};
     si.getSingleStockInfo(ticker).then((data) => {
         if (!data.ask || !data.bid) { quote.price = data.regularMarketPrice } else { quote.price = type == 'buy' ? data.ask : data.bid }
-        quote.tradeable = data.tradeable;
+        quote.marketState = data.marketState;
         callback(null, quote)
     }).catch((err) => {
         callback(err)
@@ -155,8 +155,8 @@ router.post('/placeorder', (req, res) => {
                 }
 
                 //Checking if stock is tradeable
-                if (!quote.tradeable) {
-                    res.send(['Stock is not tradeable, unable to place order'])
+                if (quote.marketState == "CLOSED") {
+                    res.send(['Stock is not tradeable now, unable to place order'])
 
                     //checking validity of the stop losses and take profits
                 } else if ((order.stoploss < margincall && order.type == 'buy') || (order.stoploss > margincall && order.type == 'sell')) {
@@ -171,7 +171,7 @@ router.post('/placeorder', (req, res) => {
                     //Now that all checks are done, order can be placed in the database
                     getUserID(username, (err, userid) => {
                         if (err) throw err;
-                        storeOrder(userid, order.type, order.ticker, quote.price, order.invested, order.leverage, order.stoploss, order.takeprofit, (err, result) => {
+                        storeOrder(userid, order.type, order.ticker.toLowerCase(), quote.price, order.invested, order.leverage, order.stoploss, order.takeprofit, (err, result) => {
                             if (err) throw err;
                             res.send(['Order placed successfully'])
                         })
@@ -192,6 +192,7 @@ router.post('/:ticker', (req, res) => {
 
     stockInfo(ticker, (err, quote) => {
         if (err) throw err
+        if (!quote.bid || !quote.ask) quote.bid = quote.regularMarketPrice; quote.ask = quote.regularMarketPrice
         res.send({
             price: quote.regularMarketPrice,
             change: quote.regularChange,

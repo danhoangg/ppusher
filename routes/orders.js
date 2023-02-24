@@ -158,7 +158,7 @@ function getUserID(username, callback) {
 
 function checkTradeable(ticker, callback) {
     si.getSingleStockInfo(ticker).then(data => {
-        callback(null, data.tradeable)
+        callback(null, data.marketState == "CLOSED" ? false : true)
     });
 }
 
