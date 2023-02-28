@@ -73,15 +73,33 @@
         data.push([split[i], split[i+1]])
     }
 
-    chart = anychart.line();
+    var dataSet = anychart.data.set(data);
+    var seriesData = dataSet.mapAs({x: 0, value: 1});
+    var chart = anychart.line();
 
-    var series = chart.spline(data);
-    series.name("Value")
+    chart.animation(true);
+    chart.padding([10, 20, 5, 20]);
+    chart.crosshair().enabled(true).yLabel(false).yStroke(null);
+    chart.tooltip().positionMode('point');
+    chart.title('Portfolio History');
 
-    chart.title("Portfolio History");
-    chart.container("container");
+    chart.yAxis().title('Value of Portfolio ($)');
+    chart.xAxis().labels().padding(5);
 
-    chart.draw()
+    chart.xScale().mode('continuous');
+
+    var series = chart.line(seriesData);
+    series.name('Portfolio Value');
+    series.hovered().markers().enabled(true).type('circle').size(4);
+    series
+        .tooltip()
+        .position('right')
+        .anchor('left-center')
+        .offsetX(5)
+        .offsetY(5);
+
+    chart.container('container');
+    chart.draw();
 
 </script>
 

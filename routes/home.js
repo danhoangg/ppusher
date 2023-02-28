@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const si = require("stock-info")
+var yahooFinance = require("yahoo-finance")
 
 var mysql = require('mysql');
 
@@ -172,12 +173,30 @@ function updateValues(cookie, callback) {
                     })
                     latestorders = latestorders.reverse()
                     latestorders = latestorders.slice(0, 3)
-                    console.log(latestorders)
                     callback(null, balance, monthpl, monthcolor, cashavailable, totalinvested, totalpl, currentcolor, latestorders)
                 })
             });
         });
     })
+}
+
+function getHistorical(ticker, callback) {
+    let now = new Date();
+    let yearAgo = new Date();
+    yearAgo.setFullYear(now.getFullYear() - 1);
+
+    now.toISOString().split('T')[0]
+    yearAgo.toISOString().split('T')[0]
+
+    yahooFinance.historical({
+        symbol: ticker.toUpperCase(),
+        from: yearAgo,
+        to: now,
+        period: 'd'
+      }, function (err, quotes) {
+        if (err) callback(err)
+        callback(null, quotes)
+      });
 }
 
 //If user is logged in, redirect to home page, else redirect to login page
@@ -204,6 +223,13 @@ router.get('/', (req, res) => {
         res.redirect('/account/login')
     }
 });
+
+router.post('/getHistorical', (req, res) => {
+    let ticker = 'AAPL'
+    getHistorical(ticker, function (err, quotes) {
+        res.send(JSON.stringify(quotes))
+    })
+})
 
 //GOT AN IDEA, SEND POST REQUEST TO SERVER FROM FRONTEND JAVASCRIPT TO UPDATE VALUES
 //then just setinterval on the frontend and replace values on the home page to keep up to date with markets

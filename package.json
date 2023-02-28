@@ -10,7 +10,10 @@
     "http": "^0.0.1-security",
     "jquery": "^3.6.1",
     "mysql": "^2.18.1",
-    "stock-info": "^1.6.2"
+    "stock-info": "^1.6.2",
+    "stocksocket": "^2.1.2",
+    "ws": "^8.12.1",
+    "yahoo-finance": "^0.3.8"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

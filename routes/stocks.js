@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const si = require("stock-info")
+const Websocket = require('ws')
 
 var mysql = require('mysql');
 
@@ -66,6 +67,8 @@ router.get('/:ticker', (req, res) => {
         if (err) {
             res.redirect('/stocks/error')
         } else {
+            startUpdate(ticker)
+
             res.render('stocks', {
                 username: username,
                 ticker: ticker,
@@ -77,7 +80,7 @@ router.get('/:ticker', (req, res) => {
                 bid: quote.bid,
                 ask: quote.ask
             })
-        } 
+        }
     })
 })
 
@@ -138,7 +141,7 @@ router.post('/placeorder', (req, res) => {
     var username = req.cookies.username;
     var order = req.body;
     orderStockInfo(order.ticker, order.type, (err, quote) => {
-        if(err) throw err;
+        if (err) throw err;
 
         var margincall = calcMarginCall(order.type, quote.price, order.leverage);
         order.stoploss = !order.stoploss ? margincall : order.stoploss;
@@ -176,10 +179,10 @@ router.post('/placeorder', (req, res) => {
                             res.send(['Order placed successfully'])
                         })
                     })
-                    
+
                 }
 
-                
+
             })
         })
 
@@ -187,21 +190,26 @@ router.post('/placeorder', (req, res) => {
 
 })
 
-router.post('/:ticker', (req, res) => {
-    var ticker = req.params.ticker;
+//decided to start testing with websockets in place of constant post requests, that was weird tbh
+function startUpdate(ticker) {
+    const wss = new Websocket.Server({ port: 8080 });
 
-    stockInfo(ticker, (err, quote) => {
-        if (err) throw err
-        if (!quote.bid || !quote.ask) quote.bid = quote.regularMarketPrice; quote.ask = quote.regularMarketPrice
-        res.send({
-            price: quote.regularMarketPrice,
-            change: quote.regularChange,
-            changePercent: quote.regularChangePercent,
-            changeColor: quote.regularChange >= 0 ? 'text-success' : 'text-danger',
-            bid: quote.bid,
-            ask: quote.ask
-        })
+    wss.on('connection', (ws) => {
+        setInterval(() => {
+            stockInfo(ticker, (err, quote) => {
+                if (err) throw err
+                if (!quote.bid || !quote.ask) quote.bid = quote.regularMarketPrice; quote.ask = quote.regularMarketPrice
+                ws.send(JSON.stringify({
+                    price: quote.regularMarketPrice,
+                    change: quote.regularChange,
+                    changePercent: quote.regularChangePercent,
+                    changeColor: quote.regularChange >= 0 ? 'text-success' : 'text-danger',
+                    bid: quote.bid,
+                    ask: quote.ask
+                }))
+            })
+        }, 1000)
     })
-})
+}
 
 module.exports = router

@@ -45,7 +45,8 @@ function getBalance(username, callback) {
 }
 
 function getPrices(tickers, callback) {
-    si.getStocksInfo(tickers).then((data) => {
+    si.getStocksInfo(tickers).then((data, err) => {
+        if (err) callback(err)
         bidprices = []
         askprices = []
         regularchangepercents = []

@@ -46,8 +46,7 @@ router.get('/', (req, res) => {
         for (i=0; i<results.length; i++) {
             var date = String(results[i].Date);
             //converting the date into a readable format for graph
-            temp = date.split('T')
-            date = temp[0] + "" + temp[1].split('.')[0]
+            date = date.split(' ').slice(1, 5).join(' ');
 
             var balance = results[i].Balance;
             data.push([date, balance])
