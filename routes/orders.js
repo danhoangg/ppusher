@@ -3,26 +3,7 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const si = require("stock-info")
 
-var mysql = require('mysql');
-
-var connection = mysql.createPool({
-    host: "sql7.freemysqlhosting.net",
-    port: "3306",
-    user: "sql7598748",
-    password: "",
-    database: "sql7598748",
-    multipleStatements: true
-});
-
-connection.on('connection', function (connection) {
-    console.log('Pool id %d connected', connection.threadId);
-});
-
-connection.on('enqueue', function () {
-    console.log('Waiting for available connection slot');
-});
-
-global.con = connection
+var dbconnection = require('./config.js').mysql_pool;
 
 const router = express.Router()
 
@@ -31,16 +12,22 @@ router.use(bodyParser.json())
 router.use(cookieParser())
 
 function getOrders(username, callback) {
-    con.query("SELECT Type, Ticker, AvgOpen, Invested, Leverage, OrderID FROM OrderTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?)", username, function (err, result, fields) {
-        if (err) throw callback(err);
-        callback(null, result)
+    dbconnection.getConnection(function (err, con) {
+        con.query("SELECT Type, Ticker, AvgOpen, Invested, Leverage, OrderID FROM OrderTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?)", username, function (err, result, fields) {
+            if (err) throw callback(err);
+            callback(null, result)
+        });
+        con.release();
     });
 }
 
 function getBalance(username, callback) {
-    con.query("SELECT Balance FROM TransactionTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?) ORDER BY Date DESC LIMIT 1", username, function (err, result, fields) {
-        if (err) throw callback(err);
-        callback(null, result[0].Balance)
+    dbconnection.getConnection(function (err, con) {
+        con.query("SELECT Balance FROM TransactionTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?) ORDER BY Date DESC LIMIT 1", username, function (err, result, fields) {
+            if (err) throw callback(err);
+            callback(null, result[0].Balance)
+        });
+        con.release()
     });
 }
 
@@ -144,17 +131,23 @@ function updateValues(username, callback) {
 
 //delete the order from the orders table and then add a transaction to the transactions table
 function closeOrder(userid, transaction, balance, orderid, callback) {
-    con.query('INSERT INTO TransactionTable (UserID, Transaction, Balance) VALUES (?, ?, ?); DELETE FROM OrderTable WHERE OrderID = ?', [userid, transaction, balance, orderid], function (err, results) {
-        if (err) throw callback(err)
-        console.log('Order successfully closed')
-    })
+    dbconnection.getConnection(function (err, con) {
+        con.query('INSERT INTO TransactionTable (UserID, Transaction, Balance) VALUES (?, ?, ?); DELETE FROM OrderTable WHERE OrderID = ?', [userid, transaction, balance, orderid], function (err, results) {
+            if (err) throw callback(err)
+            console.log('Order successfully closed')
+        })
+        con.release();
+    });
 }
 
 function getUserID(username, callback) {
-    con.query('SELECT UserID FROM UserTable WHERE username = ?', [username], function (err, results) {
-        if (err) throw callback(err)
-        callback(null, results[0].UserID)
-    })
+    dbconnection.getConnection(function (err, con) {
+        con.query('SELECT UserID FROM UserTable WHERE username = ?', [username], function (err, results) {
+            if (err) throw callback(err)
+            callback(null, results[0].UserID)
+        })
+        con.release()
+    });
 }
 
 function checkTradeable(ticker, callback) {

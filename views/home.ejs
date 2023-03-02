@@ -7,9 +7,9 @@
   <link rel="icon" type="image/x-icon" href="/Resources/favicon.jpeg">
   
   <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+
   <script src="https://cdn.anychart.com/releases/8.7.1/js/anychart-core.min.js" type="text/javascript"></script>
   <script src="https://cdn.anychart.com/releases/8.7.1/js/anychart-stock.min.js" type="text/javascript"></script>
-  <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-annotations.min.js"></script>
 
   <link rel="stylesheet" href="/css/home.css">
   <link rel="stylesheet" href="/css/master.css">
@@ -94,63 +94,37 @@
         </div>
       <% } %>
 
-        <div id="container" style="height:800px;"></div>
-
-      <!-- TradingView Widget BEGIN -->
-      <div class="tradingview-widget-container w-75 mx-auto my-5">
-        <div id="tradingview_0b0ba"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+      <!-- SCRIPT FOR DRAWING THE STOCKS -->
         <script type="text/javascript">
           var currentticker;
           var stocklength = '<%- locals.latestorders.length %>'
           var lateststocks = '<%- locals.latestorders.map(order => order.ticker) %>'
           lateststocks = lateststocks.split(',')
 
-          function createWidget(ticker) {
-            new TradingView.widget(
-              {
-                "height": "400",
-                "symbol": ticker,
-                "interval": "D",
-                "timezone": "Etc/UTC",
-                "theme": "light",
-                "style": "1",
-                "locale": "en",
-                "toolbar_bg": "#f1f3f6",
-                "enable_publishing": false,
-                "allow_symbol_change": true,
-                "save_image": false,
-                "container_id": "tradingview_0b0ba"
-              }
-            );
-          }
-
           $( "#lateststock0" ).click(function() {
             if (currentticker != 0 && stocklength >= 1) {
-              createWidget(lateststocks[0])
+              drawStock(lateststocks[0])
               currentticker = 0
             }
           });
           $( "#lateststock1" ).click(function() {
             if (currentticker != 1 && stocklength >= 2) {
-              createWidget(lateststocks[1])
+              drawStock(lateststocks[1])
               currentticker = 1
             }
           });
           $( "#lateststock2" ).click(function() {
             if (currentticker != 2 && stocklength == 3) {
-              createWidget(lateststocks[2])
+              drawStock(lateststocks[2])
               currentticker = 2
             }
           });
 
         </script>
-      </div>
-      <!-- TradingView Widget END -->
     <% } %>
-    </div>
-
   </div>
+
+  <div id="container" style="height:800px;"></div>
 
   <!--Container Main end-->
 
@@ -158,10 +132,7 @@
   <script src="/js/sidebar.js"></script>
   <script src="/js/home.js"></script>
 
-  <script type="text/javascript">
-  </script>
-
-  <script src="/js/candlestick.js"></script>
+  <script src="/js/home/candlestick.js"></script>
 
   <script type="text/javascript">
     var myLink = document.querySelector('a[href="#"]');

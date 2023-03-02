@@ -2,28 +2,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const si = require("stock-info")
-const Websocket = require('ws')
 
-var mysql = require('mysql');
-
-var connection = mysql.createPool({
-    host: "sql7.freemysqlhosting.net",
-    port: "3306",
-    user: "sql7598748",
-    password: "",
-    database: "sql7598748",
-    multipleStatements: true
-});
-
-connection.on('connection', function (connection) {
-    console.log('Pool id %d connected', connection.threadId);
-});
-
-connection.on('enqueue', function () {
-    console.log('Waiting for available connection slot');
-});
-
-global.con = connection
+var dbconnection = require('./config.js').mysql_pool;
 
 const router = express.Router()
 
@@ -67,8 +47,6 @@ router.get('/:ticker', (req, res) => {
         if (err) {
             res.redirect('/stocks/error')
         } else {
-            startUpdate(ticker)
-
             res.render('stocks', {
                 username: username,
                 ticker: ticker,
@@ -108,32 +86,44 @@ function orderStockInfo(ticker, type, callback) {
 }
 
 function getInvested(username, callback) {
-    con.query("SELECT Invested FROM OrderTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?)", [username], (err, result) => {
-        if (err) throw callback(err);
-        callback(null, result);
-    })
+    dbconnection.getConnection(function (err, con) {
+        con.query("SELECT Invested FROM OrderTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?)", [username], (err, result) => {
+            if (err) throw callback(err);
+            callback(null, result);
+        })
+        con.release();
+    });
 }
 
 function getBalance(username, callback) {
-    con.query("SELECT Balance FROM TransactionTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?) ORDER BY Date DESC LIMIT 1", username, function (err, result, fields) {
-        if (err) throw callback(err);
-        callback(null, result[0].Balance)
+    dbconnection.getConnection(function (err, con) {
+        con.query("SELECT Balance FROM TransactionTable WHERE UserID = (SELECT UserID FROM UserTable WHERE username = ?) ORDER BY Date DESC LIMIT 1", username, function (err, result, fields) {
+            if (err) throw callback(err);
+            callback(null, result[0].Balance)
+        });
+        con.release();
     });
 }
 
 //get userid from the username
 function getUserID(username, callback) {
-    con.query("SELECT UserID FROM UserTable WHERE username = ?", username, function (err, result, fields) {
-        if (err) throw callback(err);
-        callback(null, result[0].UserID)
+    dbconnection.getConnection(function (err, con) {
+        con.query("SELECT UserID FROM UserTable WHERE username = ?", username, function (err, result, fields) {
+            if (err) throw callback(err);
+            callback(null, result[0].UserID)
+        });
+        con.release()
     });
 }
 
 //store the order into the order table in the database
 function storeOrder(userid, type, ticker, avgopen, invested, leverage, stoploss, takeprofit, callback) {
-    con.query("INSERT INTO OrderTable (UserID, Type, Ticker, AvgOpen, Invested, Leverage, StopLoss, TakeProfit) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [userid, type, ticker, avgopen, invested, leverage, stoploss, takeprofit], function (err, result, fields) {
-        if (err) throw callback(err);
-        callback(null, result)
+    dbconnection.getConnection(function (err, con) {
+        con.query("INSERT INTO OrderTable (UserID, Type, Ticker, AvgOpen, Invested, Leverage, StopLoss, TakeProfit) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [userid, type, ticker, avgopen, invested, leverage, stoploss, takeprofit], function (err, result, fields) {
+            if (err) throw callback(err);
+            callback(null, result)
+        });
+        con.release()
     });
 }
 
@@ -174,7 +164,7 @@ router.post('/placeorder', (req, res) => {
                     //Now that all checks are done, order can be placed in the database
                     getUserID(username, (err, userid) => {
                         if (err) throw err;
-                        storeOrder(userid, order.type, order.ticker.toLowerCase(), quote.price, order.invested, order.leverage, order.stoploss, order.takeprofit, (err, result) => {
+                        storeOrder(userid, order.type, order.ticker.toLowerCase(), Number(quote.price.toFixed(2)), Number(order.invested), Number(order.leverage), Number(order.stoploss.toFixed(2)), order.takeprofit ? order.takeprofit : null, (err, result) => {
                             if (err) throw err;
                             res.send(['Order placed successfully'])
                         })
@@ -190,26 +180,23 @@ router.post('/placeorder', (req, res) => {
 
 })
 
-//decided to start testing with websockets in place of constant post requests, that was weird tbh
-function startUpdate(ticker) {
-    const wss = new Websocket.Server({ port: 8080 });
+//using a post request to update the values on the website
+router.post('/:ticker', (req, res) => {
+    var ticker = req.params.ticker;
 
-    wss.on('connection', (ws) => {
-        setInterval(() => {
-            stockInfo(ticker, (err, quote) => {
-                if (err) throw err
-                if (!quote.bid || !quote.ask) quote.bid = quote.regularMarketPrice; quote.ask = quote.regularMarketPrice
-                ws.send(JSON.stringify({
-                    price: quote.regularMarketPrice,
-                    change: quote.regularChange,
-                    changePercent: quote.regularChangePercent,
-                    changeColor: quote.regularChange >= 0 ? 'text-success' : 'text-danger',
-                    bid: quote.bid,
-                    ask: quote.ask
-                }))
-            })
-        }, 1000)
+    stockInfo(ticker, (err, quote) => {
+        if (err) throw err
+        if (!quote.bid || !quote.ask) quote.bid = quote.regularMarketPrice; quote.ask = quote.regularMarketPrice
+        res.send({
+            price: quote.regularMarketPrice.toFixed(2),
+            change: quote.regularChange,
+            changePercent: quote.regularChangePercent,
+            changeColor: quote.regularChange >= 0 ? 'text-success' : 'text-danger',
+            bid: quote.bid,
+            ask: quote.ask
+        })
     })
-}
+})
+
 
 module.exports = router

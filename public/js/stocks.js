@@ -73,21 +73,24 @@ function placesellorder(ticker) {
   })
 }
 
-//playing around with websockets
-
-const websocket = new WebSocket("ws://localhost:8080");
-
-websocket.addEventListener("open", () => {
-  console.log("Connected to websocket");
-});
-
-websocket.addEventListener("message", (msg) => {
-  data = JSON.parse(msg.data);
-
-  $("#price").text(data.price);
-  $("#change").html("&nbsp;&nbsp;&nbsp;&nbsp;" + data.change.toFixed(2) + "(" + data.changePercent.toFixed(2) + "%)")
-  $("#change").removeClass('text-success text-danger')
-  $("#change").addClass(data.changeColor)
-  $("#bid").text(data.bid)
-  $("#ask").text(data.ask)
-})
+//UPDATE VALUES ON STOCKS PAGE
+// websockets did not work at all
+setInterval(() => {
+  let ticker = document.URL.split("/").at(-1);
+  fetch('/stocks/' + ticker, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: {
+      'content-type': 'application/json'
+    }
+  }).then((res) => {
+      res.json().then((arr) => {
+        $("#price").text(arr.price);
+        $("#change").html("&nbsp;&nbsp;&nbsp;&nbsp;" + arr.change.toFixed(2) + "(" + arr.changePercent.toFixed(2) + "%)")
+        $("#change").removeClass('text-success text-danger')
+        $("#change").addClass(arr.changeColor)
+        $("#bid").text(arr.bid)
+        $("#ask").text(arr.ask)
+      })
+  });
+}, 1000)
