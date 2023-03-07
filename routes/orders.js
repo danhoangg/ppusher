@@ -3,6 +3,11 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const si = require("stock-info")
 
+const WebSocket = require('ws')
+const socket = new WebSocket(
+    'wss://ws.finnhub.io?token=' //create socket for finnhub, stock trading websocket api
+);
+
 var dbconnection = require('./config.js').mysql_pool;
 
 const router = express.Router()
@@ -130,7 +135,7 @@ function updateValues(username, callback) {
 }
 
 //delete the order from the orders table and then add a transaction to the transactions table
-function closeOrder(userid, transaction, balance, orderid, callback) {
+function removeRecords(userid, transaction, balance, orderid, callback) {
     dbconnection.getConnection(function (err, con) {
         con.query('INSERT INTO TransactionTable (UserID, Transaction, Balance) VALUES (?, ?, ?); DELETE FROM OrderTable WHERE OrderID = ?', [userid, transaction, balance, orderid], function (err, results) {
             if (err) throw callback(err)
@@ -183,10 +188,7 @@ router.post('/', (req, res) => {
     })
 })
 
-//gonna make post request to close order in /home/orders/closeorder
-router.post('/closeorder', (req, res) => {
-    let orderid = req.body.orderID;
-    let username = req.cookies.username;
+function closeOrder(orderid, username, callback) {
     let closedOrder;
 
     //get all orders from the datbase
@@ -195,15 +197,14 @@ router.post('/closeorder', (req, res) => {
         orders.reverse();
         closedOrder = orders.find(order => order.OrderID == orderid);
         if (!closedOrder) {
-            res.sendStatus(403);
+            callback(403);
             return;
         }
-
         //Check if the order is tradeable
         checkTradeable(closedOrder.Ticker, function (err, tradeable) {
             if (err) throw err
             if (!tradeable) {
-                res.sendStatus(405);
+                callback(405);
                 return;
             }
             //get the balance of the user
@@ -217,15 +218,119 @@ router.post('/closeorder', (req, res) => {
                     getUserID(username, function (err, userid) {
                         let transaction = Number((orderValue - closedOrder.Invested).toFixed(2))
                         let newBalance = Number(balance) + Number(transaction)
-                        closeOrder(userid, transaction, newBalance, orderid, function (err) {
+                        removeRecords(userid, transaction, newBalance, orderid, function (err) {
                             if (err) throw err;
-                            res.redirect('/home/orders')
+
+                            callback(null, 200);
+                            return;
                         })
                     })
                 })
             })
         })
     })
+}
+
+//gonna make post request to close order in /home/orders/closeorder
+router.post('/closeorder', (req, res) => {
+    let orderid = req.body.orderID;
+    let username = req.cookies.username;
+    closeOrder(orderid, username, function (err, status) {
+        if (err) throw err
+        if (status === 200) res.redirect('/home/orders')
+    })
+
 })
+
+//new idea for keeping track of user stoplosses and takeprofits
+//create object of all orders and create dictionary of tickers
+//websocket connection, on message received check it against the stoplosses and act accordingly
+//when someone closes order remove it from object and reduce dictionry of tickers by one, if it reaches 0 then remove it from dictionary and unsubscribe from websocket
+function getAllOrders(callback) { //get stop loss and take profits of all orders
+    dbconnection.getConnection(function (err, con) {
+        con.query('SELECT OrderID, Type, Ticker, StopLoss, TakeProfit, UserTable.Username FROM OrderTable JOIN UserTable ON UserTable.UserID = OrderTable.UserID', function (err, results) {
+            if (err) throw callback(err)
+            callback(null, results)
+        })
+        con.release()
+    });
+}
+
+function subscribe(symbol) { // function to subscribe a ticker to the websocket
+    socket.send(JSON.stringify({ type: 'subscribe', symbol: symbol }));
+}
+
+function unsubscribe(symbol) { //function to unsubscribe a ticker from the websocket
+    socket.send(JSON.stringify({ type: 'unsubscribe', symbol: symbol }));
+}
+
+//initialising the two objects
+var orders = {}; //an object of tickers and each ticker contains all the orders, ive decided this will be the most efficient way of checking through all orders for stoplosses and takeprofits
+var tickers = {}; //an object of tickers but contains number of each ticker 
+
+function removeOrder(orderid, ticker) {
+    tickers[ticker] -= 1;
+    if (tickers[ticker] == 0) {
+        delete tickers[ticker];
+        unsubscribe(ticker);
+    }
+
+    let index = orders[ticker].findIndex(order => order.OrderID == orderid);
+    orders[ticker].splice(index, 1);
+}
+
+//initialise the websocket connection
+socket.addEventListener('open', function (event) {
+    console.log('websocket connected')
+
+    getAllOrders(function (err, results) { //iniialise all the variables to start websocket connection and check for stoplosses and takeprofits
+        if (err) throw err;
+        if (results.length !== 0) {
+            results.forEach(order => {
+                tickers[order.Ticker] = !tickers[order.Ticker] ? 1 : tickers[order.Ticker] + 1; //if tickers.ticker doesnt exist then make it and set it to 1, else add 1 to it
+                orders[order.Ticker] = !orders[order.Ticker] ? [order] : [...orders[order.Ticker], order]; //if orders.ticker doesnt exist make it, else append it to the end
+            })
+            Object.keys(tickers).forEach(ticker => {
+                subscribe(ticker.toUpperCase());
+            }); //subscribe to all tickers
+        }
+    })
+});
+
+// Listen for messages
+socket.addEventListener('message', function (event) {
+    let data = JSON.parse(event.data).data;
+    let limitedData = [];
+
+    if (data) {
+        //rate limit by deleting duplicate messages
+        dict = {};
+        data.reverse();
+        data.forEach((quote, i) => {
+            if (!dict[quote.s]) {
+                limitedData.push(quote)
+                dict[quote.s] = 1 //indidcate that the ticker has been added to the array
+            }
+        })
+        data = limitedData;
+        //limited data specifically only has one quote for each ticker for each message as too many causing problems
+        data.forEach(quote => {
+            orders[quote.s.toLowerCase()].forEach(order => {
+                if (((quote.p <= order.StopLoss || (order.TakeProfit && quote.p >= order.TakeProfit)) && order.Type == 'buy') || ((quote.p >= order.StopLoss || (order.TakeProfit && quote.p <= order.TakeProfit)) && order.Type == 'sell')) { 
+                    closeOrder(order.OrderID, order.Username, function(err, status) {
+                        if (err) throw err
+                        if (status === 200) {
+                            console.log('Order closed successfully')
+                            //remove the order from the orders object
+                            removeOrder(order.OrderID, quote.s.toLowerCase())
+                        }
+                    })
+                }
+            }); //check each order for stoplosses and takeprofits
+        })
+    }
+});
+
+
 
 module.exports = router

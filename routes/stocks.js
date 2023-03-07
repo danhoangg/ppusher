@@ -164,7 +164,7 @@ router.post('/placeorder', (req, res) => {
                     //Now that all checks are done, order can be placed in the database
                     getUserID(username, (err, userid) => {
                         if (err) throw err;
-                        storeOrder(userid, order.type, order.ticker.toLowerCase(), Number(quote.price.toFixed(2)), Number(order.invested), Number(order.leverage), Number(order.stoploss.toFixed(2)), order.takeprofit ? order.takeprofit : null, (err, result) => {
+                        storeOrder(userid, order.type, order.ticker.toLowerCase(), Number(quote.price.toFixed(2)), Number(order.invested), Number(order.leverage), Number(Number(order.stoploss).toFixed(2)), order.takeprofit ? order.takeprofit : null, (err, result) => {
                             if (err) throw err;
                             res.send(['Order placed successfully'])
                         })
