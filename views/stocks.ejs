@@ -9,12 +9,13 @@
 
     <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
 
-    <script src="https://cdn.anychart.com/releases/8.7.1/js/anychart-core.min.js" type="text/javascript"></script>
-    <script src="https://cdn.anychart.com/releases/8.7.1/js/anychart-stock.min.js" type="text/javascript"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-bundle.min.js"></script>
 
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/master.css">
     <link rel="stylesheet" href="/css/stocks.css">
+
+    <link rel="icon" type="image/x-icon" href="/Resources/favicon.jpeg">
 </head>
 
 <body classname="snippet-body" id="body-pd">
@@ -152,6 +153,29 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="d-flex">
+        <select id="typeSelect" onclick="createAnnotations()" class="mx-5 d-inline">
+            <option value="default" selected disabled>Annotation Type</option>
+            <option value="andrews-pitchfork">Andrews' Pitchfork</option>
+            <option value="ellipse">Ellipse</option>
+            <option value="fibonacci-arc">Fibonacci Arc</option>
+            <option value="fibonacci-fan">Fibonacci Fan</option>
+            <option value="fibonacci-retracement">Fibonacci Retracement</option>
+            <option value="fibonacci-timezones">Fibonacci Time Zones</option>  
+            <option value="horizontal-line">Horizontal Line</option> 
+            <option value="infinite-line">Infinite Line</option>
+            <option value="line">Line Segment</option>
+            <option value="marker">Marker</option>   
+            <option value="ray">Ray</option>
+            <option value="rectangle">Rectangle</option>
+            <option value="trend-channel">Trend Channel</option>
+            <option value="triangle">Triangle</option>
+            <option value="vertical-line">Vertical Line</option>
+        </select>
+        <button onclick="cancelDrawing()" class="d-inline btn btn-dark">Cancel Drawing</button>
+        <button onclick="removeAll()" class="d-inline mx-5 btn btn-dark">Remove All</button>
     </div>
 
     <div id="container" style="height:800px;"></div>

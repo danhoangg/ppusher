@@ -11,6 +11,8 @@ router.use(bodyParser.urlencoded({ extended: true }))
 router.use(bodyParser.json())
 router.use(cookieParser())
 
+var addOrder = require('./orders.js').addOrder
+
 //function to get the important stock info
 function stockInfo(ticker, callback) {
     var quote = {};
@@ -166,6 +168,7 @@ router.post('/placeorder', (req, res) => {
                         if (err) throw err;
                         storeOrder(userid, order.type, order.ticker.toLowerCase(), Number(quote.price.toFixed(2)), Number(order.invested), Number(order.leverage), Number(Number(order.stoploss).toFixed(2)), order.takeprofit ? order.takeprofit : null, (err, result) => {
                             if (err) throw err;
+                            addOrder(result.insertId, order.type, order.ticker.toLowerCase(), Number(Number(order.stoploss).toFixed(2)), order.takeprofit ? order.takeprofit : null, username)
                             res.send(['Order placed successfully'])
                         })
                     })

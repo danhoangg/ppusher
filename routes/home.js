@@ -12,7 +12,7 @@ router.use(bodyParser.urlencoded({ extended: true }))
 router.use(bodyParser.json())
 router.use(cookieParser())
 
-const ordersRouter = require('./orders')
+const ordersRouter = require('./orders').router
 const historyRouter = require('./history')
 router.use('/orders', ordersRouter)
 router.use('/history', historyRouter)

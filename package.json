@@ -13,7 +13,7 @@
     "mysql": "^2.18.1",
     "stock-info": "^1.6.2",
     "stocksocket": "^2.1.2",
-    "ws": "^8.12.1",
+    "ws": "^8.13.0",
     "yahoo-finance": "^0.3.8"
   },
   "devDependencies": {

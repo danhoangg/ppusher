@@ -190,44 +190,47 @@ router.post('/', (req, res) => {
 
 function closeOrder(orderid, username, callback) {
     let closedOrder;
-
-    //get all orders from the datbase
     getOrders(username, function (err, orders) {
         if (err) throw err;
         orders.reverse();
         closedOrder = orders.find(order => order.OrderID == orderid);
         if (!closedOrder) {
-            callback(403);
+            callback(null, 403);
             return;
         }
-        //Check if the order is tradeable
-        checkTradeable(closedOrder.Ticker, function (err, tradeable) {
-            if (err) throw err
-            if (!tradeable) {
-                callback(405);
-                return;
-            }
-            //get the balance of the user
-            getBalance(username, function (err, balance) {
-                if (err) throw err;
-                //get the current price of the stock
-                getPrices([closedOrder.Ticker], function (err, prices) {
+        try {
+            //Check if the order is tradeable
+            checkTradeable(closedOrder.Ticker, function (err, tradeable) {
+                if (err) throw err
+                if (!tradeable) {
+                    callback(null, 405);
+                    return;
+                }
+                //get the balance of the user
+                getBalance(username, function (err, balance) {
                     if (err) throw err;
-                    //get the profit/loss of the order
-                    let orderValue = closedOrder.Type == 'buy' ? getProfitLoss(closedOrder.Invested, prices[0][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type) : getProfitLoss(closedOrder.Invested, prices[1][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type)
-                    getUserID(username, function (err, userid) {
-                        let transaction = Number((orderValue - closedOrder.Invested).toFixed(2))
-                        let newBalance = Number(balance) + Number(transaction)
-                        removeRecords(userid, transaction, newBalance, orderid, function (err) {
-                            if (err) throw err;
+                    //get the current price of the stock
+                    getPrices([closedOrder.Ticker], function (err, prices) {
+                        if (err) throw err;
+                        //get the profit/loss of the order
+                        let orderValue = closedOrder.Type == 'buy' ? getProfitLoss(closedOrder.Invested, prices[0][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type) : getProfitLoss(closedOrder.Invested, prices[1][0], closedOrder.AvgOpen, closedOrder.Leverage, closedOrder.Type)
+                        getUserID(username, function (err, userid) {
+                            let transaction = Number((orderValue - closedOrder.Invested).toFixed(2))
+                            let newBalance = Number(balance) + Number(transaction)
+                            removeRecords(userid, transaction, newBalance, orderid, function (err) {
+                                if (err) throw err;
 
-                            callback(null, 200);
-                            return;
+                                removeOrder(orderid, closedOrder.Ticker)
+                                callback(null, 200);
+                                return;
+                            })
                         })
                     })
                 })
             })
-        })
+        } catch (e) {
+            console.log(e)
+        }
     })
 }
 
@@ -237,7 +240,7 @@ router.post('/closeorder', (req, res) => {
     let username = req.cookies.username;
     closeOrder(orderid, username, function (err, status) {
         if (err) throw err
-        if (status === 200) res.redirect('/home/orders')
+        res.send(status)
     })
 
 })
@@ -277,6 +280,23 @@ function removeOrder(orderid, ticker) {
 
     let index = orders[ticker].findIndex(order => order.OrderID == orderid);
     orders[ticker].splice(index, 1);
+    console.log(orders)
+}
+
+function addOrder(OrderID, Type, Ticker, StopLoss, TakeProfit, Username) {
+    let order = {
+        OrderID: OrderID,
+        Type: Type,
+        Ticker: Ticker,
+        StopLoss: StopLoss,
+        TakeProfit: TakeProfit,
+        Username: Username
+    }
+
+    orders[Ticker] = !orders[Ticker] ? [order] : [...orders[Ticker], order];
+    tickers[Ticker] = !tickers[Ticker] ? 1 : tickers[Ticker] + 1;
+    if (tickers[Ticker] === 1) subscribe(Ticker.toUpperCase())
+    console.log(orders)
 }
 
 //initialise the websocket connection
@@ -290,6 +310,7 @@ socket.addEventListener('open', function (event) {
                 tickers[order.Ticker] = !tickers[order.Ticker] ? 1 : tickers[order.Ticker] + 1; //if tickers.ticker doesnt exist then make it and set it to 1, else add 1 to it
                 orders[order.Ticker] = !orders[order.Ticker] ? [order] : [...orders[order.Ticker], order]; //if orders.ticker doesnt exist make it, else append it to the end
             })
+            console.log(orders)
             Object.keys(tickers).forEach(ticker => {
                 subscribe(ticker.toUpperCase());
             }); //subscribe to all tickers
@@ -333,4 +354,4 @@ socket.addEventListener('message', function (event) {
 
 
 
-module.exports = router
+module.exports = {router: router, addOrder: addOrder} //export both router and addOrder functoin

@@ -11,7 +11,14 @@ var valueMapping = dataTable.mapAs({ 'value': 5 });
 var chart = anychart.stock();
 
 // set the series
-var series = chart.plot(0).candlestick(mapping);
+var plot = chart.plot(0);
+var series = plot.candlestick(mapping);
+
+// create an EMA indicator with period 20
+var ema20 = plot.ema(mapping, 20).series();
+
+// set the EMA color
+ema20.stroke('#000000');
 
 //plot the volume underneath
 var volumePlot = chart.plot(1);
@@ -63,4 +70,20 @@ function drawStock(ticker) {
             chart.title(`${ticker.toUpperCase()} Trade Data`);
         })
     });
+}
+
+// create annotations
+function createAnnotations() {
+    var select = document.getElementById("typeSelect");
+    plot.annotations().startDrawing({type: select.value, color: "black"});   
+  }
+  
+// remove all annotations
+function removeAll() {
+    plot.annotations().removeAllAnnotations();
+}
+
+//cancel the drawing so user can use the mouse to zoom in/out, etc
+function cancelDrawing() {
+    plot.annotations().cancelDrawing();
 }
