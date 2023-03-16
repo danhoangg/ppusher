@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const si = require("stock-info")
 
+var transporter = require('./config.js').transporter;
 var dbconnection = require('./config.js').mysql_pool;
 
 const router = express.Router()
@@ -129,6 +130,33 @@ function storeOrder(userid, type, ticker, avgopen, invested, leverage, stoploss,
     });
 }
 
+function getEmail(username, callback) { //will need to use this function a lot with new mailing system
+    dbconnection.getConnection(function (err, con) {
+      con.query("SELECT Email FROM UserTable WHERE username = ?", [username], function (err, result) {
+        if (err) throw err;
+        callback(null, result[0].Email);
+      })
+      con.release();
+    })
+  }
+
+function sendEmail(output, subject, email) {
+    // setup email data with unicode symbols
+    let mailOptions = {
+        from: '"PPusher Contact" ppusherwebsite@gmail.com', // sender address
+        to: email, // list of receivers
+        subject: subject, // Subject line
+        html: output // html body
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+        }
+    });
+}
+
 router.post('/placeorder', (req, res) => {
     var username = req.cookies.username;
     var order = req.body;
@@ -169,6 +197,27 @@ router.post('/placeorder', (req, res) => {
                         storeOrder(userid, order.type, order.ticker.toLowerCase(), Number(quote.price.toFixed(2)), Number(order.invested), Number(order.leverage), Number(Number(order.stoploss).toFixed(2)), order.takeprofit ? order.takeprofit : null, (err, result) => {
                             if (err) throw err;
                             addOrder(result.insertId, order.type, order.ticker.toLowerCase(), Number(Number(order.stoploss).toFixed(2)), order.takeprofit ? order.takeprofit : null, username)
+                            
+                            getEmail(username, (err, email) => {
+                                if(err) throw err;
+
+                                let output = `
+                                    <h1>New position opened for account ${username}</h1>
+                                    <p>A new ${order.type} order has been placed ID: ${result.insertId}</p>
+                                    <ul>
+                                        <li>Symbol: ${order.ticker.toUpperCase()}</li>
+                                        <li>Time opened: ${new Date()}</li>
+                                        <li>Invested: ${Number(order.invested).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</li>
+                                        <li>Leverage: ${order.leverage}</li>
+                                        <li>${order.type[0].toUpperCase() + order.type.slice(1)} price: ${Number(quote.price.toFixed(2))}</li>
+                                    </ul>
+                                `;
+                                let subject = "New position opened";
+
+                                sendEmail(output, subject, email);
+
+                            })
+
                             res.send(['Order placed successfully'])
                         })
                     })

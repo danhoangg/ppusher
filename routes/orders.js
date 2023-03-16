@@ -5,9 +5,10 @@ const si = require("stock-info")
 
 const WebSocket = require('ws')
 const socket = new WebSocket(
-    'wss://ws.finnhub.io?token=' //create socket for finnhub, stock trading websocket api
+    'wss://ws.finnhub.io?token=cft2nhhr01qokdd01kagcft2nhhr01qokdd01kb0' //create socket for finnhub, stock trading websocket api
 );
 
+var transporter = require('./config.js').transporter;
 var dbconnection = require('./config.js').mysql_pool;
 
 const router = express.Router()
@@ -140,6 +141,7 @@ function removeRecords(userid, transaction, balance, orderid, callback) {
         con.query('INSERT INTO TransactionTable (UserID, Transaction, Balance) VALUES (?, ?, ?); DELETE FROM OrderTable WHERE OrderID = ?', [userid, transaction, balance, orderid], function (err, results) {
             if (err) throw callback(err)
             console.log('Order successfully closed')
+            callback(null)
         })
         con.release();
     });
@@ -158,6 +160,34 @@ function getUserID(username, callback) {
 function checkTradeable(ticker, callback) {
     si.getSingleStockInfo(ticker).then(data => {
         callback(null, data.marketState == "CLOSED" ? false : true)
+    });
+}
+
+function getEmail(username, callback) { //will need to use this function a lot with new mailing system
+    dbconnection.getConnection(function (err, con) {
+        con.query("SELECT Email FROM UserTable WHERE username = ?", [username], function (err, result) {
+            if (err) throw err;
+            callback(null, result[0].Email);
+        })
+        con.release();
+    })
+}
+  
+
+function sendEmail(output, subject, email) { //function for sending emails
+    // setup email data with unicode symbols
+    let mailOptions = {
+        from: '"PPusher Contact" ppusherwebsite@gmail.com', // sender address
+        to: email, // list of receivers
+        subject: subject, // Subject line
+        html: output // html body
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+        }
     });
 }
 
@@ -220,9 +250,25 @@ function closeOrder(orderid, username, callback) {
                             removeRecords(userid, transaction, newBalance, orderid, function (err) {
                                 if (err) throw err;
 
-                                removeOrder(orderid, closedOrder.Ticker)
-                                callback(null, 200);
-                                return;
+                                let output = `
+                                <h1>Order closed for account ${username}</h1>
+                                <p>Order ID: ${orderid} has been closed:</p>
+                                <ul>
+                                    <li>Symbol: ${closedOrder.Ticker.toUpperCase()}</li>
+                                    <li>Time closed: ${new Date()}</li>
+                                    <li>Invested: ${Number(closedOrder.Invested.toFixed(2)).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</li>
+                                    <li>Profit/Loss: ${transaction.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</li>
+                                </ul>
+                                `;
+                                let subject = "Position closed";
+                                getEmail(username, function (err, email) {
+                                    if (err) throw err;
+                                    removeOrder(orderid, closedOrder.Ticker)
+                                    sendEmail(output, subject, email);
+                                    
+                                    callback(null, 200);
+                                    return;
+                                })                               
                             })
                         })
                     })
@@ -280,7 +326,6 @@ function removeOrder(orderid, ticker) {
 
     let index = orders[ticker].findIndex(order => order.OrderID == orderid);
     orders[ticker].splice(index, 1);
-    console.log(orders)
 }
 
 function addOrder(OrderID, Type, Ticker, StopLoss, TakeProfit, Username) {
@@ -296,13 +341,9 @@ function addOrder(OrderID, Type, Ticker, StopLoss, TakeProfit, Username) {
     orders[Ticker] = !orders[Ticker] ? [order] : [...orders[Ticker], order];
     tickers[Ticker] = !tickers[Ticker] ? 1 : tickers[Ticker] + 1;
     if (tickers[Ticker] === 1) subscribe(Ticker.toUpperCase())
-    console.log(orders)
 }
 
-//initialise the websocket connection
-socket.addEventListener('open', function (event) {
-    console.log('websocket connected')
-
+function initialiseWebsocket() {
     getAllOrders(function (err, results) { //iniialise all the variables to start websocket connection and check for stoplosses and takeprofits
         if (err) throw err;
         if (results.length !== 0) {
@@ -310,12 +351,27 @@ socket.addEventListener('open', function (event) {
                 tickers[order.Ticker] = !tickers[order.Ticker] ? 1 : tickers[order.Ticker] + 1; //if tickers.ticker doesnt exist then make it and set it to 1, else add 1 to it
                 orders[order.Ticker] = !orders[order.Ticker] ? [order] : [...orders[order.Ticker], order]; //if orders.ticker doesnt exist make it, else append it to the end
             })
-            console.log(orders)
             Object.keys(tickers).forEach(ticker => {
                 subscribe(ticker.toUpperCase());
             }); //subscribe to all tickers
         }
     })
+}
+
+function reinitialiseWebsocket() {
+    Object.keys(tickers).forEach(ticker => {
+        unsubscribe(ticker.toUpperCase());
+    }); //unsubscribe from all tickers
+    orders = {};
+    tickers = {};
+    initialiseWebsocket();
+}
+
+//initialise the websocket connection
+socket.addEventListener('open', function (event) {
+    console.log('websocket connected')
+
+    initialiseWebsocket()
 });
 
 // Listen for messages
@@ -337,8 +393,8 @@ socket.addEventListener('message', function (event) {
         //limited data specifically only has one quote for each ticker for each message as too many causing problems
         data.forEach(quote => {
             orders[quote.s.toLowerCase()].forEach(order => {
-                if (((quote.p <= order.StopLoss || (order.TakeProfit && quote.p >= order.TakeProfit)) && order.Type == 'buy') || ((quote.p >= order.StopLoss || (order.TakeProfit && quote.p <= order.TakeProfit)) && order.Type == 'sell')) { 
-                    closeOrder(order.OrderID, order.Username, function(err, status) {
+                if (((quote.p <= order.StopLoss || (order.TakeProfit && quote.p >= order.TakeProfit)) && order.Type == 'buy') || ((quote.p >= order.StopLoss || (order.TakeProfit && quote.p <= order.TakeProfit)) && order.Type == 'sell')) {
+                    closeOrder(order.OrderID, order.Username, function (err, status) {
                         if (err) throw err
                         if (status === 200) {
                             console.log('Order closed successfully')
@@ -354,4 +410,4 @@ socket.addEventListener('message', function (event) {
 
 
 
-module.exports = {router: router, addOrder: addOrder} //export both router and addOrder functoin
+module.exports = { router: router, addOrder: addOrder, reinitialiseWebsocket: reinitialiseWebsocket } //export both router and addOrder functoin
