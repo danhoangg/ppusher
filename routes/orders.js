@@ -218,6 +218,8 @@ router.post('/', (req, res) => {
     })
 })
 
+var repeats = 0;
+
 function closeOrder(orderid, username, callback) {
     let closedOrder;
     getOrders(username, function (err, orders) {
@@ -250,7 +252,9 @@ function closeOrder(orderid, username, callback) {
                             removeRecords(userid, transaction, newBalance, orderid, function (err) {
                                 if (err) throw err;
 
-                                let output = `
+                                repeats++;
+                                if (repeats === 1) { //this is to stop the spam of data that comes thru the websocket
+                                    let output = `
                                 <h1>Order closed for account ${username}</h1>
                                 <p>Order ID: ${orderid} has been closed:</p>
                                 <ul>
@@ -260,15 +264,19 @@ function closeOrder(orderid, username, callback) {
                                     <li>Profit/Loss: ${transaction.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</li>
                                 </ul>
                                 `;
-                                let subject = "Position closed";
-                                getEmail(username, function (err, email) {
-                                    if (err) throw err;
-                                    removeOrder(orderid, closedOrder.Ticker)
-                                    sendEmail(output, subject, email);
-                                    
-                                    callback(null, 200);
-                                    return;
-                                })                               
+                                    let subject = "Position closed";
+                                    getEmail(username, function (err, email) {
+                                        if (err) throw err;
+                                        removeOrder(orderid, closedOrder.Ticker)
+                                        sendEmail(output, subject, email);
+
+                                        callback(null, 200);
+                                        return;
+                                    })
+                                }
+                                setTimeout(() => {
+                                    repeats = 0;
+                                }, 1500);                               
                             })
                         })
                     })
@@ -397,7 +405,6 @@ socket.addEventListener('message', function (event) {
                     closeOrder(order.OrderID, order.Username, function (err, status) {
                         if (err) throw err
                         if (status === 200) {
-                            console.log('Order closed successfully')
                             //remove the order from the orders object
                             removeOrder(order.OrderID, quote.s.toLowerCase())
                         }
