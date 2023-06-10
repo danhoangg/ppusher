@@ -54,9 +54,9 @@ router.get('/:ticker', (req, res) => {
                 username: username,
                 ticker: ticker,
                 image: quote.image,
-                price: quote.regularMarketPrice,
-                change: quote.regularChange,
-                changePercent: quote.regularChangePercent,
+                price: quote.regularMarketPrice.fmt,
+                change: quote.regularChange.fmt,
+                changePercent: quote.regularChangePercent.raw,
                 displayName: quote.displayName,
                 bid: quote.bid,
                 ask: quote.ask
@@ -80,7 +80,7 @@ function calcMarginCall(type, avgopen, leverage) {
 function orderStockInfo(ticker, type, callback) {
     let quote = {};
     si.getSingleStockInfo(ticker).then((data) => {
-        if (!data.ask || !data.bid) { quote.price = data.regularMarketPrice } else { quote.price = type == 'buy' ? data.ask : data.bid }
+        if (!data.ask || !data.bid) { quote.price = data.regularMarketPrice.raw } else { quote.price = type == 'buy' ? data.ask : data.bid }
         quote.marketState = data.marketState;
         callback(null, quote)
     }).catch((err) => {
@@ -162,7 +162,6 @@ router.post('/placeorder', (req, res) => {
     var order = req.body;
     orderStockInfo(order.ticker, order.type, (err, quote) => {
         if (err) throw err;
-
         var margincall = calcMarginCall(order.type, quote.price, order.leverage);
         order.stoploss = !order.stoploss ? margincall : order.stoploss;
 
@@ -240,12 +239,12 @@ router.post('/:ticker', (req, res) => {
         if (err) throw err
         if (!quote.bid || !quote.ask) quote.bid = quote.regularMarketPrice; quote.ask = quote.regularMarketPrice
         res.send({
-            price: quote.regularMarketPrice.toFixed(2),
-            change: quote.regularChange,
-            changePercent: quote.regularChangePercent,
-            changeColor: quote.regularChange >= 0 ? 'text-success' : 'text-danger',
-            bid: quote.bid,
-            ask: quote.ask
+            price: quote.regularMarketPrice.fmt,
+            change: quote.regularChange.fmt,
+            changePercent: quote.regularChangePercent.raw,
+            changeColor: quote.regularChange.raw >= 0 ? 'text-success' : 'text-danger',
+            bid: quote.bid.raw,
+            ask: quote.ask.raw
         })
     })
 })

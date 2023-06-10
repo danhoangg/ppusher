@@ -47,15 +47,15 @@ function getPrices(tickers, callback) {
         displayName = []
         data.forEach(element => {
             //When stocks are pre or post state, there are no bid and ask prices therefore must use regularmarketprice
-            if (element.bid == 0 || element.ask == 0) {
-                bidprices.push(element.regularMarketPrice)
-                askprices.push(element.regularMarketPrice)
+            if (!element.bid || !element.ask) {
+                bidprices.push(element.regularMarketPrice.raw)
+                askprices.push(element.regularMarketPrice.raw)
             } else {
                 bidprices.push(element.bid)
                 askprices.push(element.ask)
             }
             regularchangepercents.push(element.regularMarketChangePercent)
-            regularMarketPrices.push(element.regularMarketPrice)
+            regularMarketPrices.push(element.regularMarketPrice.raw)
             displayName.push(element.longName)
         })
         callback(null, [bidprices, askprices, displayName, regularchangepercents, regularMarketPrices])

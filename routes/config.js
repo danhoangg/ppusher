@@ -10,7 +10,7 @@ var config = {
         database: '',
         multipleStatements: true
     }),
-
+    
     transporter: nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,

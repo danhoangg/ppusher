@@ -66,15 +66,15 @@ function getPrices(tickers, callback) {
         regularMarketPrices = []
         data.forEach(element => {
             //When stocks are pre or post state, there are no bid and ask prices therefore must use regularmarketprice
-            if (element.bid == 0 || element.ask == 0) {
-                bidprices.push(element.regularMarketPrice)
-                askprices.push(element.regularMarketPrice)
+            if (!element.bid || !element.ask) {
+                bidprices.push(element.regularMarketPrice.raw)
+                askprices.push(element.regularMarketPrice.raw)
             } else {
                 bidprices.push(element.bid)
                 askprices.push(element.ask)
             }
-            regularchangepercents.push(element.regularMarketChangePercent)
-            regularMarketPrices.push(element.regularMarketPrice)
+            regularchangepercents.push(element.regularMarketChangePercent.raw)
+            regularMarketPrices.push(element.regularMarketPrice.raw)
         })
         callback(null, bidprices, askprices, regularchangepercents, regularMarketPrices)
     });
@@ -142,7 +142,7 @@ function updateValues(cookie, callback) {
                     latestorders = []
                     counter = 0;
                     currentprices.forEach(element => {
-                        percentage = (regularchangepercents[counter]).toFixed(2);
+                        percentage = Number(regularchangepercents[counter]).toFixed(2);
                         try {
                             if (profitloss[counter].Ticker != profitloss[counter - 1].Ticker) {
                                 if (percentage >= 0) {

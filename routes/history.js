@@ -1,7 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const si = require("stock-info")
 
 var dbconnection = require('./config.js').mysql_pool;
 

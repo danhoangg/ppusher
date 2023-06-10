@@ -130,7 +130,7 @@
                         <%= locals.price || "PRICE" %>
                     </h5>
                     <p id="change" class="d-inline <%= locals.change >= 0 ? 'text-success' : 'text-danger' %>">
-                        &nbsp;&nbsp;&nbsp;&nbsp; <%= locals.change.toFixed(2) + "(" + locals.changePercent.toFixed(2)
+                        &nbsp;&nbsp;&nbsp;&nbsp; <%= Number(locals.change).toFixed(2) + "(" + Number(locals.changePercent).toFixed(2)
                             + "%)" %>
                     </p>
                 </div>
